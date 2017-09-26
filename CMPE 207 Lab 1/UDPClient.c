@@ -28,6 +28,7 @@ int main(int argc, char const *argv[]) {
 	*/
 	network_socket = socket(AF_INET, SOCK_DGRAM, 0);
 	
+
 	server_address.sin_family = AF_INET;
 	server_address.sin_port = htons(13);
 	server_address.sin_addr.s_addr = INADDR_ANY;
@@ -36,6 +37,13 @@ int main(int argc, char const *argv[]) {
 	
 	if(cnctn_status == -1)
 		printf("The connection is invalid.");
+	
+	char daytimeResponse[512];
+	recv(network_socket, daytimeResponse, sizeof(daytimeResponse), 0);
+	printf("The daytime response from the server is: %s\n", daytimeResponse);	
+
+	// Close the socket connected to the Daytime Server
+	close(network_socket);
 
 	return 0;
 }
