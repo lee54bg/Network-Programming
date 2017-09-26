@@ -12,11 +12,22 @@
 int main(int argc, char const *argv[]) {
 	
 	/* Declare variables for sockets, ip address, etc. */
-	// Create a socket for connection
+	
+	// Create a socket for connection and use this variable to hold the
+	// status of the network_socket
 	int network_socket;
-	network_socket = socket(AF_INET, SOCK_DGRAM, 0);
 
+	// Declare the parameters for the server socket the user is trying to connect to
 	struct sockaddr_in server_address;
+	
+	// Initialize the socket with the following parameters
+	/*
+	AF_INET = IPv4
+	SOCK_DGRAM = UDP
+	0 = No flags set	
+	*/
+	network_socket = socket(AF_INET, SOCK_DGRAM, 0);
+	
 	server_address.sin_family = AF_INET;
 	server_address.sin_port = htons(13);
 	server_address.sin_addr.s_addr = INADDR_ANY;
