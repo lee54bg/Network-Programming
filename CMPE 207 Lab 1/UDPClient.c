@@ -7,43 +7,43 @@
 #include <netinet/tcp.h>
 #include <string.h>
 #include <unistd.h>
+//#include <unp.h>
 #define PORT 8080
 
 int main(int argc, char const *argv[]) {
 	
-	/* Declare variables for sockets, ip address, etc. */
-	
 	// Create a socket for connection and use this variable to hold the
 	// status of the network_socket
 	int network_socket;
+	network_socket = socket(AF_INET, SOCK_DGRAM, 0);	
 
+	//Will be used for keeping track of the file lines later
+	int count;
+	
 	// Declare the parameters for the server socket the user is trying to connect to
 	struct sockaddr_in server_address;
-	
-	// Initialize the socket with the following parameters
-	/*
-	AF_INET = IPv4
-	SOCK_DGRAM = UDP
-	0 = No flags set	
-	*/
-	network_socket = socket(AF_INET, SOCK_DGRAM, 0);
-	
-
-	server_address.sin_family = AF_INET;
-	server_address.sin_port = htons(13);
-	server_address.sin_addr.s_addr = INADDR_ANY;
-
-	int cnctn_status = connect(network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
-	
-	if(cnctn_status == -1)
-		printf("The connection is invalid.");
+	server_address.sin_family = AF_INET;		// IPv4 Address
+	server_address.sin_port = htons(13);		// Get the port 
+	server_address.sin_addr.s_addr = INADDR_ANY;	// Use any IP Address
 	
 	char daytimeResponse[512];
-	recv(network_socket, daytimeResponse, sizeof(daytimeResponse), 0);
+	int cc = recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0);
+	
 	printf("The daytime response from the server is: %s\n", daytimeResponse);	
-
+	while (cc > 0) {
+		daytimeResponse[512 + 1] = '\0';
+		fputs(daytimeResponse, stdout);
+	}
+/*
+	while( (count = read(network_socket, daytimeResponse, sizeof(daytimeResponse))) ) {
+		daytimeResponse[count] = 0;
+		if( fputs(daytimeResponse, stdout) == EOF)
+			err_sys("Can't read from file");
+	}
+*/
+	
 	// Close the socket connected to the Daytime Server
 	close(network_socket);
-
+	
 	return 0;
 }
