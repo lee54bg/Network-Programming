@@ -11,7 +11,8 @@
 #define BUFSIZE 1024
 
 int main(int argc, char const *argv[]) {
-	
+	printf("Starting UDP client\n");
+
 	// Create a socket for connection and use this variable to hold the
 	// status of the network_socket
 	int network_socket;
@@ -20,31 +21,35 @@ int main(int argc, char const *argv[]) {
 	//Will be used for keeping track of the file lines later
 	int count, length;
 	
+	printf("Set the network socket\n");
+
 	// Declare the parameters for the server socket the user is trying to connect to
 	struct sockaddr_in server_address;
 	int addrlen = sizeof(server_address);
 
 	server_address.sin_family = AF_INET;		// IPv4 Address
 	server_address.sin_port = htons(13);		// Get the port 
-	server_address.sin_addr.s_addr = INADDR_ANY;	// Use any IP Address
+	server_address.sin_addr.s_addr = htonl(INADDR_ANY);	// Use any IP Address
 	
+	//bind(network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
+	
+	printf("Successfully binded the ip address\n");
+
 	char daytimeResponse[BUFSIZE];
 	char temp[] = "Hello";
-	int cc;
+	int test;
 	
-	sendto(network_socket, &temp, sizeof(temp), 0, (struct sockaddr *) &network_socket, addrlen);
-	recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &network_socket, &addrlen);
+	test = sendto(network_socket, temp, sizeof(temp), 0, (struct sockaddr *) &server_address, addrlen);
 	
+	printf("Sent the dgram\n");
+
+	if(test < 0)
+		printf("Send doesn't work");
+	
+	recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &server_address, &addrlen);
+	printf("About to print my dgram received\n");
 	printf("Message is: %s\n", daytimeResponse);
-	// printf("The daytime response from the server is: %s\n", daytimeResponse);	
+	
 		
-	/*while (1) {
-		cc = recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &network_socket, &addrlen);
-		// daytimeResponse[512 + 1] = '\0';
-		// fputs(daytimeResponse, stdout);
-		printf("Message is: %s\n", daytimeResponse);
-	}*/
-	
-	
 	return 0;
 }
