@@ -7,8 +7,8 @@
 #include <netinet/tcp.h>
 #include <string.h>
 #include <unistd.h>
-//#include <unp.h>
 #define PORT 8080
+#define BUFSIZE 1024
 
 int main(int argc, char const *argv[]) {
 	
@@ -22,20 +22,28 @@ int main(int argc, char const *argv[]) {
 	
 	// Declare the parameters for the server socket the user is trying to connect to
 	struct sockaddr_in server_address;
+	int addrlen = sizeof(server_address);
+
 	server_address.sin_family = AF_INET;		// IPv4 Address
 	server_address.sin_port = htons(13);		// Get the port 
 	server_address.sin_addr.s_addr = INADDR_ANY;	// Use any IP Address
 	
-	length = sizeof(server_address);
-
-	char daytimeResponse[512];
-	int cc = recvfrom(network_socket, $daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &network_socket, );
+	char daytimeResponse[BUFSIZE];
+	char temp[] = "Hello";
+	int cc;
 	
-	printf("The daytime response from the server is: %s\n", daytimeResponse);	
-	while (1) {
-		daytimeResponse[512 + 1] = '\0';
-		fputs(daytimeResponse, stdout);
-	}
+	sendto(network_socket, &temp, sizeof(temp), 0, (struct sockaddr *) &network_socket, addrlen);
+	recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &network_socket, &addrlen);
+	
+	printf("Message is: %s\n", daytimeResponse);
+	// printf("The daytime response from the server is: %s\n", daytimeResponse);	
+		
+	/*while (1) {
+		cc = recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &network_socket, &addrlen);
+		// daytimeResponse[512 + 1] = '\0';
+		// fputs(daytimeResponse, stdout);
+		printf("Message is: %s\n", daytimeResponse);
+	}*/
 	
 	
 	return 0;
