@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-
 #include <unistd.h>
 #include <netdb.h>
 #define BUFSIZE 1024
@@ -13,22 +12,25 @@
 int main(int argc, char const *argv[]) {
 
 	int network_socket = 0,	// Create socket
-	localaddrlen	= 0,
-	remaddrlen	= 0,	// Used to take the size of the remote address
-	socketStatus	= 0;
+	socketStatus	= 0;	// Monitor status of the socket that's being created
 
-	char daytimeResponse[BUFSIZE];
-
+	char daytimeResponse[] = "Hi";
 
 	struct sockaddr_in hostaddr, remaddr;
 
 	socklen_t locaddrlen = sizeof(hostaddr);
 	socklen_t remaddrlen = sizeof(remaddr);
 	
-	network_socket = socket(AF_INET, SOCK_DGRAM, 0);
-	
-	if (network_socket < 0)
+	if ( (network_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		printf("Socket doesn't work");
-		
+	
+	remaddr.sin_family = AF_INET;
+	remaddr.sin_port = htons(3051);
+	remaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if( (socketStatus = sendto(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &remaddr, remaddrlen)) < 0) {
+		printf("Send didn't work");
+	}
+
 	return 0;
 }

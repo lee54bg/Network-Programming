@@ -7,4 +7,4 @@ run_UDPClient:
 	./UDPClient
 
 clean: 
-	$(RM) *.out 
+	$(RM) *.o
