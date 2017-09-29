@@ -32,12 +32,10 @@ int main(int argc, char const *argv[]) {
 
 	server = gethostbyname(hostname);	//Set the hostname as the hostent
 	
-	/*
 	hostaddr.sin_family = AF_INET;		// IPv4 Address
 	hostaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	hostaddr.sin_port = htons(13);		// Get the port 	
-	*/
-
+	
 	server_address.sin_family = AF_INET;		// IPv4 Address
 	bcopy((char *) server->h_addr, (char *) &server_address.sin_addr.s_addr, server->h_length);
 	server_address.sin_port = htons(13);		// Get the port 	
@@ -56,7 +54,8 @@ int main(int argc, char const *argv[]) {
 	
 	if( test < 0)
 		printf("Receive doesn't work");
-
+	
+	printf("About to print my dgram received\n");
 	printf("Message is: %s\n", daytimeResponse);
 		
 	return 0;
