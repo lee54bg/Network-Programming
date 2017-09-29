@@ -1,10 +1,10 @@
 default:
 
 compile:
-	gcc Main.c
+	gcc UDPClient.c -o UDPClient 
 
-run:
-	./a.out
+run_UDPClient:
+	./UDPClient
 
 clean: 
 	$(RM) *.out 
