@@ -24,33 +24,31 @@ int main(int argc, char const *argv[]) {
 	socklen_t locaddrlen = sizeof(hostaddr);
 	socklen_t remaddrlen = sizeof(remaddr);
 	
-	if ( (network_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	if ( (network_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		printf("Socket doesn't work");
 	
 	server = gethostbyname(hostname);	
 	
 	remaddr.sin_family = AF_INET;
-	remaddr.sin_port = ntohs(5353);
+	remaddr.sin_port = htons(13);
 	bcopy((char *) server->h_addr, (char *) &remaddr.sin_addr.s_addr, server->h_length);
 
-	if( (socketStatus = sendto(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &remaddr, remaddrlen)) < 0) {
+	if( (socketStatus = connect(network_socket, (struct sockaddr *) &remaddr, remaddrlen)) < 0) {
 		printf("Send didn't work");
 	}
 	
 	printf("Sendto works");
 	memset((char *) &daytimeResponse, 0, sizeof(daytimeResponse));
 	
-	//Purely experimental to see if changing from htons to ntohs will work
-	//memset((char *) &remaddr, 0, sizeof(remaddr));
-	//remaddr.sin_family = AF_INET;
-	//remaddr.sin_port = ntohs(13);
-	//bcopy((char *) server->h_addr, (char *) &remaddr.sin_addr.s_addr, server->h_length);
+	
 
-	if( (socketStatus = recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &remaddr, &remaddrlen)) < 0) {
+	if( (socketStatus = recv(network_socket, daytimeResponse, sizeof(daytimeResponse), 0)) < 0) {
 		printf("recvfrom didn't work");
 	}
 
 	printf("Results: %s\n", daytimeResponse);	
+
+	close(network_socket);
 
 	return 0;
 }

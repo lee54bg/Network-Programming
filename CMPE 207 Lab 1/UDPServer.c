@@ -30,19 +30,18 @@ int main(int argc, char const *argv[]) {
 	memset( (char *) &localaddr, 0, sizeof(localaddr) );
 	localaddr.sin_family = AF_INET;		// IPv4 Address
 	localaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	localaddr.sin_port = htons(3051);		// Get the port 	
+	localaddr.sin_port = htons(3002);		// Get the port 	
 	
 	if ( bind(network_socket, (struct sockaddr *) &localaddr, sizeof(localaddr) ) < 0) {
 		printf("Error in binding");
 		return 0;
 	}
 	
-	while(1) {
 		socketStatus = recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &remaddr, &remaddrlen);
 	
 		if( socketStatus < 0)
 			printf("Receive doesn't work");
 	
 		printf("Message is: %s\n", daytimeResponse);
-	}	
+	return 0;
 }

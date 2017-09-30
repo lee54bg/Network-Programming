@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
 		printf("Socket doesn't work");
 	
 	remaddr.sin_family = AF_INET;
-	remaddr.sin_port = htons(3051);
+	remaddr.sin_port = htons(3002);
 	remaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if( (socketStatus = sendto(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &remaddr, remaddrlen)) < 0) {
