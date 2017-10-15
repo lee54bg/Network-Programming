@@ -31,13 +31,19 @@ int main(int argc, char const *argv[]) {
 	
 	remaddr.sin_family = AF_INET;
 	remaddr.sin_port = htons(13);
+	
+	printf("Sin_familiy: %d\n", remaddr.sin_family);
+	printf("Port number: %d\n", remaddr.sin_port);
+
 	bcopy((char *) server->h_addr, (char *) &remaddr.sin_addr.s_addr, server->h_length);
+
+	printf("Address: %d\n", &remaddr.sin_addr.s_addr);
 
 	if( (socketStatus = connect(network_socket, (struct sockaddr *) &remaddr, remaddrlen)) < 0) {
 		printf("Send didn't work");
 	}
 	
-	printf("Sendto works");
+	printf("Sendto works\n");
 	memset((char *) &daytimeResponse, 0, sizeof(daytimeResponse));
 	
 	

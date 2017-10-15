@@ -30,10 +30,10 @@ int main(int argc, char const *argv[]) {
 		printf("Socket doesn't work");
 	
 	server = gethostbyname(hostname);	
-	daytime = getservbyname("time", "udp");	
+	daytime = getservbyname("daytime", "udp");	
 
 	remaddr.sin_family = AF_INET;
-	remaddr.sin_port = ntohs(daytime->s_port);
+	remaddr.sin_port = ntohs(37);
 	bcopy((char *) server->h_addr, (char *) &remaddr.sin_addr.s_addr, server->h_length);
 
 	if( (socketStatus = sendto(network_socket, emptyString, sizeof(emptyString), 0, (struct sockaddr *) &remaddr, remaddrlen)) < 0) {
@@ -44,12 +44,6 @@ int main(int argc, char const *argv[]) {
 	printf("Port number is: %d\n", ntohs(daytime->s_port));
 	memset((char *) &daytimeResponse, 0, sizeof(daytimeResponse));
 	
-	//Purely experimental to see if changing from htons to ntohs will work
-	//memset((char *) &remaddr, 0, sizeof(remaddr));
-	//remaddr.sin_family = AF_INET;
-	//remaddr.sin_port = ntohs(13);
-	//bcopy((char *) server->h_addr, (char *) &remaddr.sin_addr.s_addr, server->h_length);
-
 	if( (socketStatus = recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &remaddr, &remaddrlen)) < 0) {
 		printf("recvfrom didn't work");
 	}
