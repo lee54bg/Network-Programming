@@ -1,54 +1,125 @@
 // Server side C/C++ program to demonstrate Socket programming
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <stdlib.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <unistd.h>
+#include <arpa/inet.h>
 #include <netdb.h>
-#include <string.h>
-#define BUFSIZE 1024
+#include <fcntl.h>
+#define BUFFERSIZE 1024
+#define FILENAMESIZE 256
 
-int main(int argc, char const *argv[]) {
-
+int main(int argc, char **argv) {
 	int network_socket	= 0,	// Create socket
-	socketStatus		= 0;	// Monitor status of the socket that's being created
-
-	char daytimeResponse[BUFSIZE];
-	char emptyString[] = "Yoo";
-	char hostname[] = "time-b.nist.gov";
+	filedes			= 0,	// Create File Descriptor
+	socketStatus		= 0,	// Monitor status of the socket that's being created
+	bytesSnt		= 0,
+	bytesRcvd		= 0,
+	totalBytesSnt		= 0,	// Total number of bytes sent to the server
+	totalBytesRcvd		= 0;	// Total number of bytes received from the server
 	
-	struct sockaddr_in hostaddr, remaddr;
-	struct hostent *server;
-	struct servent *daytime;
-
-	socklen_t locaddrlen = sizeof(hostaddr);
-	socklen_t remaddrlen = sizeof(remaddr);
 	
-	if ( (network_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	char buffer[BUFFERSIZE];	// Buffer to be used for reading and writing data
+	char *file_path;	// The file name to be sent to the server
+	char *ip_address;	// The name of the ip address to be used to connect to the server
+	ssize_t read_return;	// Size of the buffer to be used for reading and writing to the file
+
+	unsigned short server_port = 12345;	// Port number to be used for connection
+	struct sockaddr_in hostaddr, remaddr;	// Initialize client and server address data structure
+	struct timeval timeout;			// Set the timeout for the socket so that the socket is not stuck on read
+	timeout.tv_sec = 2;
+	timeout.tv_usec = 0;
+
+	socklen_t locaddrlen = sizeof(hostaddr);	// Length of our locaddrlen
+	socklen_t remaddrlen = sizeof(remaddr);		// Length of our remaddrlen
+	
+	network_socket = socket(AF_INET, SOCK_STREAM, 0);
+	setsockopt(network_socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout, sizeof(timeout));
+
+	if ( network_socket < 0)
 		printf("Socket doesn't work");
+
+	memset((char *) &remaddr, 0, sizeof(remaddr));
+	memset((char *) &buffer, 0, sizeof(buffer));
+	remaddr.sin_family	= AF_INET;
 	
-	server = gethostbyname(hostname);	
-	daytime = getservbyname("daytime", "udp");	
+	switch(argc) {
+		case 2:
+			file_path = argv[1];
+			remaddr.sin_port	= htons(3002);
+			remaddr.sin_addr.s_addr	= INADDR_ANY;
+			break;	
+		case 3:
+			server_port		= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server
+			file_path = argv[2];
+			
+			remaddr.sin_port	= htons(server_port);		// Port Number of our server
+			remaddr.sin_addr.s_addr	= INADDR_ANY;			// Any IP address to be used locally
+			break;	
+		case 4:
+			ip_address		= argv[1];			// IP Address in ASCII form
+			server_port		= strtol(argv[2], NULL, 10);	// Port number to be used for connecting to the server
+			file_path		= argv[3];			// File name
 
-	remaddr.sin_family = AF_INET;
-	remaddr.sin_port = ntohs(37);
-	bcopy((char *) server->h_addr, (char *) &remaddr.sin_addr.s_addr, server->h_length);
+			remaddr.sin_port	= htons(server_port);		// Port Number of our server
+			remaddr.sin_addr.s_addr	= inet_addr(ip_address);	// IP Address of our server
+			break;	
+	}
 
-	if( (socketStatus = sendto(network_socket, emptyString, sizeof(emptyString), 0, (struct sockaddr *) &remaddr, remaddrlen)) < 0) {
-		printf("Send didn't work");
+	socketStatus = connect(network_socket, (struct sockaddr *) &remaddr, remaddrlen);
+
+	if(socketStatus < 0) {
+		perror("Unable to establish connection");
+            	exit(EXIT_FAILURE);
 	}
 	
-	printf("Port number is: %d\n", daytime->s_port);
-	printf("Port number is: %d\n", ntohs(daytime->s_port));
-	memset((char *) &daytimeResponse, 0, sizeof(daytimeResponse));
-	
-	if( (socketStatus = recvfrom(network_socket, daytimeResponse, sizeof(daytimeResponse), 0, (struct sockaddr *) &remaddr, &remaddrlen)) < 0) {
-		printf("recvfrom didn't work");
+	// Send file name to the server to be read and check for errors
+	if ( ( write(network_socket, file_path, sizeof(file_path)) ) == -1) {
+		perror("Failed to write to file");
+		exit(EXIT_FAILURE);
 	}
 
-	printf("Results: %s\n", daytimeResponse);	
+	filedes = open(file_path,
+		O_WRONLY | O_CREAT | O_TRUNC,
+		S_IRUSR | S_IWUSR);
+	
+	if (filedes == -1) {
+		perror("Error in creating file");
+            	exit(EXIT_FAILURE);
+	}
+
+	while(1) {
+		read_return = read(network_socket, buffer, BUFFERSIZE);
+		
+		if(read_return <= 0)
+			break;
+
+		totalBytesRcvd += read_return;
+
+		if (read_return == -1) {
+                	perror("read");
+	                exit(EXIT_FAILURE);
+		}
+
+		if (write(filedes, buffer, read_return) == -1) {
+			perror("Failed to write to file");
+			exit(EXIT_FAILURE);
+		}
+		
+		bzero(buffer, BUFFERSIZE);
+	}
+
+	printf("The total number of bytes received: %d\n", totalBytesRcvd);
+
+	bzero(buffer, BUFFERSIZE);
+	sprintf(buffer, "%d", totalBytesRcvd);
+	write(network_socket, buffer, BUFFERSIZE);	// Sending the amount of bytes received to the server
+
+	close(filedes);
 	close(network_socket);
 
 	return 0;

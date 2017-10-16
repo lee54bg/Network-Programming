@@ -1,6 +1,7 @@
 // Server side C/C++ program to demonstrate Socket programming
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -8,7 +9,6 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <string.h>
 #include <fcntl.h>
 #define BUFFERSIZE 1024
 #define FILENAMESIZE 256
@@ -57,16 +57,16 @@ int main(int argc, char **argv) {
 			server_port		= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server
 			file_path = argv[2];
 			
-			remaddr.sin_port	= htons(server_port);
-			remaddr.sin_addr.s_addr	= INADDR_ANY;
+			remaddr.sin_port	= htons(server_port);		// Port Number of our server
+			remaddr.sin_addr.s_addr	= INADDR_ANY;			// Any IP address to be used locally
 			break;	
 		case 4:
 			ip_address		= argv[1];			// IP Address in ASCII form
 			server_port		= strtol(argv[2], NULL, 10);	// Port number to be used for connecting to the server
 			file_path		= argv[3];			// File name
 
-			remaddr.sin_port	= htons(server_port);		// Port Number
-			remaddr.sin_addr.s_addr	= inet_addr(ip_address);	// IP Address
+			remaddr.sin_port	= htons(server_port);		// Port Number of our server
+			remaddr.sin_addr.s_addr	= inet_addr(ip_address);	// IP Address of our server
 			break;	
 	}
 
@@ -114,6 +114,10 @@ int main(int argc, char **argv) {
 	}
 
 	printf("The total number of bytes received: %d\n", totalBytesRcvd);
+
+	bzero(buffer, BUFFERSIZE);
+	sprintf(buffer, "%d", totalBytesRcvd);
+	write(network_socket, buffer, BUFFERSIZE);	// Sending the amount of bytes received to the server
 
 	close(filedes);
 	close(network_socket);

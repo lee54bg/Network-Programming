@@ -154,7 +154,25 @@ int main(int argc, char **argv) {
 			puts("Going back to listening");
 			continue;		
 		}
-			
+		
+
+	int numKids = 5;
+	int procNum;
+	
+	for(procNum = 0; procNum < numKids; ++procNum) {
+		pid = fork();
+
+		if(pid == 0)
+			break;
+		
+	}
+
+	if(pid == 0)
+		printf("I am the child with pid %d\n", (int) getpid());
+
+
+
+	
 	}
 		
 	close(lstnScket);
