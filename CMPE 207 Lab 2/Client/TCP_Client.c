@@ -10,22 +10,27 @@
 #include <netdb.h>
 #include <string.h>
 #include <fcntl.h>
-#define BUFSIZE 1024
+#define BUFFERSIZE 1024
 #define FILENAMESIZE 256
 
 int main(int argc, char **argv) {
 	int network_socket	= 0,	// Create socket
 	filedes			= 0,	// Create File Descriptor
-	socketStatus		= 0;	// Monitor status of the socket that's being created
+	socketStatus		= 0,	// Monitor status of the socket that's being created
+	bytesSnt		= 0,
+	bytesRcvd		= 0,
+	totalBytesSnt		= 0,	// Total number of bytes sent to the server
+	totalBytesRcvd		= 0;	// Total number of bytes received from the server
 	
-	char buffer[BUFSIZE];	// Buffer to be used for reading and writing data
-	char *file_path;	//
-	char *ip_address;	//
-	ssize_t read_return;	//
+	
+	char buffer[BUFFERSIZE];	// Buffer to be used for reading and writing data
+	char *file_path;	// The file name to be sent to the server
+	char *ip_address;	// The name of the ip address to be used to connect to the server
+	ssize_t read_return;	// Size of the buffer to be used for reading and writing to the file
 
-	struct sockaddr_in hostaddr, remaddr;	//
-	unsigned short server_port = 12345;	//
-	struct timeval timeout;
+	unsigned short server_port = 12345;	// Port number to be used for connection
+	struct sockaddr_in hostaddr, remaddr;	// Initialize client and server address data structure
+	struct timeval timeout;			// Set the timeout for the socket so that the socket is not stuck on read
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
@@ -66,9 +71,18 @@ int main(int argc, char **argv) {
 	}
 
 	socketStatus = connect(network_socket, (struct sockaddr *) &remaddr, remaddrlen);
+
+	if(socketStatus < 0) {
+		perror("Unable to establish connection");
+            	exit(EXIT_FAILURE);
+	}
 	
-	write(network_socket, file_path, sizeof(file_path));
-	
+	// Send file name to the server to be read and check for errors
+	if ( ( write(network_socket, file_path, sizeof(file_path)) ) == -1) {
+		perror("Failed to write to file");
+		exit(EXIT_FAILURE);
+	}
+
 	filedes = open(file_path,
 		O_WRONLY | O_CREAT | O_TRUNC,
 		S_IRUSR | S_IWUSR);
@@ -78,10 +92,13 @@ int main(int argc, char **argv) {
             	exit(EXIT_FAILURE);
 	}
 
-        do {
-		read_return = read(network_socket, buffer, BUFSIZE);
+	while(1) {
+		read_return = read(network_socket, buffer, BUFFERSIZE);
+		
+		if(read_return <= 0)
+			break;
 
-		printf("%zd\n", read_return);
+		totalBytesRcvd += read_return;
 
 		if (read_return == -1) {
                 	perror("read");
@@ -89,13 +106,15 @@ int main(int argc, char **argv) {
 		}
 
 		if (write(filedes, buffer, read_return) == -1) {
-			perror("write");
+			perror("Failed to write to file");
 			exit(EXIT_FAILURE);
 		}
-		bzero(buffer, BUFSIZE);
-	} while (read_return > 0);
-	
-	printf("Exited out of the loop");
+		
+		bzero(buffer, BUFFERSIZE);
+	}
+
+	printf("The total number of bytes received: %d\n", totalBytesRcvd);
+
 	close(filedes);
 	close(network_socket);
 
