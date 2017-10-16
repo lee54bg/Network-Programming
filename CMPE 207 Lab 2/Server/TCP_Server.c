@@ -38,8 +38,6 @@ int main(int argc, char **argv) {
 	socklen_t localaddrlen	= sizeof(localaddr);
 	socklen_t remaddrlen	= sizeof(remaddr);
 	
-	puts("Before open");
-	
 	filedes = open(file_path, O_RDONLY);
 
 	if (filedes == -1) {
@@ -47,8 +45,6 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 	
-	printf("open works");
-
 	// Create the socket with the following paremeters
 	network_socket = socket(AF_INET, SOCK_STREAM, 0);
 	
