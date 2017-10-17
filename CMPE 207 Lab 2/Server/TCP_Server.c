@@ -22,20 +22,18 @@ int main(int argc, char **argv) {
 	totalBytesSnt	= 0,	// Total number of bytes sent to the client
 	totalBytesRd	= 0;	// Total number of bytes read from the file
 	
-	unsigned short server_port = 12345;
+	unsigned short server_port;	// Our port number for our listening socket
 
-	char buffer[BUFFERSIZE];
-	char *ip_address;
-	char file_path[FILENAMESIZE];
-	char *filename;
+	char buffer[BUFFERSIZE];	// Buffer used for sending and receiving data
+	char file_path[FILENAMESIZE];	// This will be our file name
 
-	struct sockaddr_in localaddr, remaddr;			// Creating local and remote endpoints
+	struct sockaddr_in localaddr, remaddr;	// Creating our local and remote endpoints data structures
 
-	ssize_t read_return;
+	ssize_t read_return;	// Variable used for reading 
+				// how many bytes were sending/reading at a time
 
-	// Getting the length of both local and remote sockets
-	socklen_t localaddrlen	= sizeof(localaddr);
-	socklen_t remaddrlen	= sizeof(remaddr);
+	socklen_t localaddrlen	= sizeof(localaddr);	// Length of our local address
+	socklen_t remaddrlen	= sizeof(remaddr);	// Length of our remote address
 	
 	memset( (char *) &localaddr, 0, sizeof(localaddr) );	// Zero out the local address
 

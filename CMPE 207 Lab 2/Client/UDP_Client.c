@@ -21,23 +21,22 @@ int main(int argc, char **argv) {
 	bytesRcvd		= 0,
 	totalBytesSnt		= 0,	// Total number of bytes sent to the server
 	totalBytesRcvd		= 0;	// Total number of bytes received from the server
-	
-	
+		
 	char buffer[BUFFERSIZE];	// Buffer to be used for reading and writing data
 	char *file_path;	// The file name to be sent to the server
 	char *ip_address;	// The name of the ip address to be used to connect to the server
 	ssize_t read_return;	// Size of the buffer to be used for reading and writing to the file
 
 	unsigned short server_port = 12345;	// Port number to be used for connection
-	struct sockaddr_in hostaddr, remaddr;	// Initialize client and server address data structure
+	struct hostent *server_info;		// Used to hold server information
+	struct sockaddr_in remaddr;	// Initialize client and server address data structure
 	struct timeval timeout;			// Set the timeout for the socket so that the socket is not stuck on read
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
-	socklen_t locaddrlen = sizeof(hostaddr);	// Length of our locaddrlen
 	socklen_t remaddrlen = sizeof(remaddr);		// Length of our remaddrlen
 	
-	network_socket = socket(AF_INET, SOCK_STREAM, 0);
+	network_socket = socket(AF_INET, SOCK_DGRAM, 0);
 	setsockopt(network_socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout, sizeof(timeout));
 
 	if ( network_socket < 0)
@@ -70,15 +69,8 @@ int main(int argc, char **argv) {
 			break;	
 	}
 
-	socketStatus = connect(network_socket, (struct sockaddr *) &remaddr, remaddrlen);
-
-	if(socketStatus < 0) {
-		perror("Unable to establish connection");
-            	exit(EXIT_FAILURE);
-	}
-	
 	// Send file name to the server to be read and check for errors
-	if ( ( write(network_socket, file_path, sizeof(file_path)) ) == -1) {
+	if ( ( sendto(network_socket, file_path, FILENAMESIZE, 0, (struct sockaddr*) &remaddr, remaddrlen) ) < 0) {
 		perror("Failed to write to file");
 		exit(EXIT_FAILURE);
 	}
@@ -93,29 +85,33 @@ int main(int argc, char **argv) {
 	}
 
 	while(1) {
-		read_return = read(network_socket, buffer, BUFFERSIZE);
+		bytesRcvd = recvfrom(network_socket, buffer, BUFFERSIZE, 0, (struct sockaddr*) &remaddr, &remaddrlen);
 		
-		if(read_return <= 0)
+		if(bytesRcvd <= 0)
 			break;
 
-		totalBytesRcvd += read_return;
+		totalBytesRcvd += bytesRcvd;
 
-		if (read_return == -1) {
+		if (bytesRcvd < 0) {
                 	perror("read");
 	                exit(EXIT_FAILURE);
 		}
 
-		if (write(filedes, buffer, read_return) == -1) {
-			perror("Failed to write to file");
-			exit(EXIT_FAILURE);
+		bytesSnt = write(filedes, buffer, BUFFERSIZE);
+				
+		totalBytesSnt += bytesSnt;
+				
+		if ( bytesSnt < 0) {
+			perror("ERROR sending to socket ");
+			exit(1);
 		}
 		
-		bzero(buffer, BUFFERSIZE);
+		memset(buffer, 0, BUFFERSIZE);
 	}
 
 	printf("The total number of bytes received: %d\n", totalBytesRcvd);
 
-	bzero(buffer, BUFFERSIZE);
+	memset(buffer, 0, BUFFERSIZE);
 	sprintf(buffer, "%d", totalBytesRcvd);
 	write(network_socket, buffer, BUFFERSIZE);	// Sending the amount of bytes received to the server
 

@@ -8,97 +8,156 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#define BUFSIZE 1024
+#define BUFFERSIZE 1024
+#define FILENAMESIZE 256
 
 int main(int argc, char **argv) {
-	int network_socket	= 0,	// Create socket
-		clientSocket	= 0,	// Creating our client Socket
-		socketStatus	= 0,	// Creating our socket status
-		filedes		= 0;	// Creating our file Descriptor
+	int lstnScket	= 0,	// Create our listening socket
+	clientSocket	= 0,	// Creating our client Socket
+	socketStatus	= 0,	// Creating our socket status
+	filedes		= 0,	// Creating our file Descriptor
+	pid		= 0,	// Used for identifying our process id (both child and parent)
+	bytesSnt	= 0,	// Bytes sent for each individual send
+	bytesRcvd	= 0,	// Bytes read for each individual read
+	bytesRd		= 0,	// Bytes read for each individual read
+	totalBytesSnt	= 0,	// Total number of bytes sent to the client
+	totalBytesRcvd	= 0,	// Total number of bytes received from the client
+	totalBytesRd	= 0;	// Total number of bytes read from the file
 	
-	unsigned short server_port = 12345;
+	unsigned short server_port;
 
-	char *file_path = "Programming.txt";	// Name of our file just for testing purposes
-	char buffer[BUFSIZ];
-	
-	// Sets file name if there's an argument
-	if( argc > 1 ) {
-		file_path = argv[1];
-		if (argc > 2) {
-			server_port = strtol(argv[2], NULL, 10);
-		}
-	}
+	char buffer[BUFFERSIZE];
+	char *ip_address;
+	char file_path[FILENAMESIZE];
+	char *filename;
 
+	struct sockaddr_in localaddr, remaddr;			// Creating local and remote endpoints
+	struct hostent *clientinfo;
 	ssize_t read_return;
-
-	// Creating local and remote endpoints
-	struct sockaddr_in localaddr, remaddr;
 
 	// Getting the length of both local and remote sockets
 	socklen_t localaddrlen	= sizeof(localaddr);
 	socklen_t remaddrlen	= sizeof(remaddr);
 	
-	puts("Before open");
-	
-	filedes = open(file_path, O_RDONLY);
+	memset( (char *) &localaddr, 0, sizeof(localaddr) );	// Zero out the local address
 
-	if (filedes == -1) {
-	        perror("open");
+	switch(argc) {
+		case 2:
+			server_port = strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server	
+			break;	
+		default:
+			puts("Not enough arguments.  Terminating server...");
+			exit(EXIT_FAILURE);
+			break;
+	}
+
+	// Create the socket with the following paremeters
+	lstnScket = socket(AF_INET, SOCK_DGRAM, 0);
+	
+	// Check to ensure that the socket connects
+	if ( lstnScket < 0) {
+		perror("Unable to create socket.  Terminating...");
 		exit(EXIT_FAILURE);
 	}
 	
-	printf("open works");
-
-	// Create the socket with the following paremeters
-	network_socket = socket(AF_INET, SOCK_STREAM, 0);
-	
-	// Check to ensure that the socket connects
-	if ( network_socket < 0) {
-		perror("Socket cannot connect");
-		exit(1);
-	}
-	
-	// Zero out the local address
-	memset( (char *) &localaddr, 0, sizeof(localaddr) );
-
 	// Set the parameters of the local address
-	localaddr.sin_family = AF_INET;
-	localaddr.sin_addr.s_addr = INADDR_ANY;
-	localaddr.sin_port = htons(server_port);
+	localaddr.sin_family		= AF_INET;
+	localaddr.sin_addr.s_addr	= INADDR_ANY;
+	localaddr.sin_port		= htons(server_port);
 
 	// Ensure that the local endpoint has been binding to our created socket
-	if ( bind(network_socket, (struct sockaddr *) &localaddr, localaddrlen ) == -1)
+	if ( bind(lstnScket, (struct sockaddr *) &localaddr, localaddrlen ) < 0) {
 		perror("Error in binding");
-
-	if ( listen(network_socket, 5) < 0 )
-		perror("Error on listen");
-	
-	clientSocket = accept(network_socket, (struct sockaddr *) &remaddr, &remaddrlen);
+		exit(1);
+	}
 
 	while(1) {
-		read_return = read(filedes, buffer, BUFSIZ);
-		
-		// Break out of loop if there's no more data to be read
-		if (read_return == 0)
-		    break;
+		puts("Waiting for clients...");
+				
+		memset(file_path, 0, sizeof(file_path));	// Zero out the buffer for the file_path
 
-		// Exit if there's an error in reading
-		if (read_return == -1) {
-		    perror("read");
-		    exit(EXIT_FAILURE);
-		}
+		bytesRcvd	= recvfrom(lstnScket, file_path, FILENAMESIZE, 0, (struct sockaddr*) &remaddr, &remaddrlen);
+		clientinfo	= gethostbyaddr((char*) &remaddr.sin_addr.s_addr, sizeof(remaddr.sin_addr.s_addr), AF_INET);
 
-		// Send content over to the remote endpoint
-		socketStatus = write(clientSocket, buffer, read_return);
-	
-		if (socketStatus < 0) {
-			perror("ERROR reading from socket");
-		}
+		puts(file_path);	// Debugging purposes
 
+		filedes = open(file_path, O_RDONLY);
+
+		if (filedes == -1) {
+			perror("Error with opening file: ");
+			continue;
+		} else {
+			pid = fork();
+
+			if(pid == 0) {
+				printf("Child process %d\n", getpid());
+				
+				//totalBytesRd	= 0;
+				//totalBytesSnt	= 0;
+
+				// Run until the process of reading from the file and sending to the client is finished					
+				while(1) {
+					read_return = read(filedes, buffer, BUFFERSIZE);
+					
+					// puts(buffer);
+
+					totalBytesRd += read_return;
+
+					// Break out of loop if there's no more data to be read
+					if (read_return <= 0)
+					    break;
+
+					// Exit if there's an error in reading
+					if (read_return < 0) {
+					    perror("Error in reading the file: ");
+					    exit(EXIT_FAILURE);
+					}
+
+					// Send content over to the remote endpoint
+					bytesSnt = sendto(lstnScket, buffer, read_return, 0, (struct sockaddr*) &remaddr, remaddrlen);
+				
+					totalBytesSnt += bytesSnt;
+				
+					if ( bytesSnt < 0) {
+						perror("ERROR sending to socket ");
+						exit(1);
+					}
+
+					memset(buffer, 0, BUFFERSIZE);					
+				}
+
+				printf("The total number of bytes read from file: %d\n", totalBytesRd);
+				printf("The total number of bytes sent: %d\n", totalBytesSnt);
+			
+				memset(buffer, 0, BUFFERSIZE);
+				recvfrom(lstnScket, buffer, BUFFERSIZE, 0, (struct sockaddr*) &remaddr, &remaddrlen);
+				clientinfo = gethostbyaddr((char*) &remaddr.sin_addr.s_addr, sizeof(remaddr.sin_addr.s_addr), AF_INET);
+
+				bytesRcvd = atoi(buffer);
+				printf("From client: %d\n", bytesRcvd);
+
+				if (totalBytesRd == totalBytesSnt) {
+					puts("File has been successfully sent");
+
+					if (bytesRcvd == totalBytesSnt)
+						puts("Client has successfully received file");
+					else
+						puts("Error occured during file transmission");
+				} else
+					puts("Error occured during file transmission");
+
+				// Close the listening socket
+				close(lstnScket);
+				exit(0);
+			} else if(pid == -1) {
+				perror("Error in creating child processes");
+			} else {
+				continue;
+			}
+		}	
 	}
 		
-	// Close the listening socket
-	close(network_socket);
+	close(lstnScket);
 
 	return 0;
 }
