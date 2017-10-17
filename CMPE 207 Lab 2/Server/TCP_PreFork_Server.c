@@ -8,12 +8,16 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#define BUFSIZE 1024
+#include <wait.h>
+#define BUFFERSIZE 1024
 #define FILENAMESIZE 256
+
+// Usage: ./TCP_PreFork_Server port_num num_of_children
 
 int main(int argc, char **argv) {
 	int lstnScket	= 0,	// Create our listening socket
 	clientSocket	= 0,	// Creating our client Socket
+	numOfChild	= 0,	// Used for creating number of children
 	socketStatus	= 0,	// Creating our socket status
 	filedes		= 0,	// Creating our file Descriptor
 	pid		= 0,	// Used for identifying our process id (both child and parent)
@@ -23,14 +27,14 @@ int main(int argc, char **argv) {
 	totalBytesRcvd	= 0,	// Total number of bytes received from the client
 	totalBytesRd	= 0;	// Total number of bytes read from the file
 	
-	unsigned short server_port = 12345;
+	unsigned short server_port = 12345;	// Port number to be used to bind to local endpoint
 
-	char buffer[BUFSIZ];
-	char *ip_address;
-	char file_path[FILENAMESIZE];
-	char *filename;
+	char buffer[BUFFERSIZE];	//
+	char *ip_address;		//
+	char file_path[FILENAMESIZE];	//
+	char *filename;			//
 
-	struct sockaddr_in localaddr, remaddr;			// Creating local and remote endpoints
+	struct sockaddr_in localaddr, remaddr;	// Creating local and remote endpoints
 
 	ssize_t read_return;
 
@@ -38,15 +42,15 @@ int main(int argc, char **argv) {
 	socklen_t localaddrlen	= sizeof(localaddr);
 	socklen_t remaddrlen	= sizeof(remaddr);
 	
-	memset( (char *) &localaddr, 0, sizeof(localaddr) );	// Zero out the local address
+	memset(&localaddr, 0, sizeof(localaddr));	// Zero out the buffer for the local address
 
 	switch(argc) {
 		case 2:
 			server_port	= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server	
 			break;	
 		case 3:
-			ip_address	= argv[1];			// IP Address in ASCII form
-			server_port	= strtol(argv[2], NULL, 10);	// Port number to be used for connecting to the server
+			server_port	= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server
+			numOfChild	= atoi(argv[2]);
 			break;
 		default:
 			puts("Not enough arguments.  Terminating server...");
@@ -74,33 +78,47 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	if ( listen(lstnScket, 5) < 0 )
-		perror("Error on listen");
+	if ( listen(lstnScket, 10) < 0 )
+		perror("Error on listen: ");
 
-	while(1) {
-		puts("Waiting for clients...");
-		clientSocket = accept(lstnScket, (struct sockaddr *) &remaddr, &remaddrlen);
+	// Count number of children
+	int cntChld;
 		
-		bzero(file_path, sizeof(file_path));	// Zero out the buffer for the file_path
-		bytesRcvd = read(clientSocket, (char *) file_path, sizeof(file_path) );	// Read the file name request from the client
+	for(cntChld = 0; cntChld < numOfChild; ++cntChld) {
+		pid = fork();
 		
-		puts(file_path);	// For debugging purposes
+		if(pid == 0)
+			break;	
+	}
 
-		filedes = open(file_path, O_RDONLY);
+	if(pid == 0) {
+		// Start Server process
+		while(1) {
+			bzero(file_path, sizeof(file_path));	// Zero out the buffer for the file_path
+			totalBytesRd	= 0;
+			totalBytesSnt	= 0;
 
-		if (filedes == -1) {
-			perror("Error with opening file: ");
-			continue;
-		} else
-			pid = fork();
+			// Debugging purposes
+			printf("Child process #%d waiting for clients\n", getpid());
 
-		if(pid == 0) {
-			close(lstnScket);
+			clientSocket = accept(lstnScket, (struct sockaddr *) &remaddr, &remaddrlen);
+			// sleep(10);
+		
+			bytesRcvd = read(clientSocket, (char *) file_path, sizeof(file_path) );	// Read the file name request from the client
+		
+			puts(file_path);	// For debugging purposes
+
+			filedes = open(file_path, O_RDONLY);
+
+			if (filedes == -1) {
+				perror("Error with opening file: ");
+				continue;
+			}		
 
 			// Run until the process of reading from the file and sending to the client is finished					
 			while(1) {
-				read_return = read(filedes, buffer, BUFSIZ);
-		
+				read_return = read(filedes, buffer, BUFFERSIZE);
+	
 				totalBytesRd += read_return;
 
 				// Break out of loop if there's no more data to be read
@@ -115,66 +133,46 @@ int main(int argc, char **argv) {
 
 				// Send content over to the remote endpoint
 				bytesSnt = write(clientSocket, buffer, read_return);
-				
+			
 				totalBytesSnt += bytesSnt;
-				
+			
 				if ( bytesSnt < 0) {
 					perror("ERROR sending to socket ");
 					exit(1);
 				}
-				bzero(buffer, BUFSIZE);
+				bzero(buffer, BUFFERSIZE);
 			}
 
 			printf("The total number of bytes read from file: %d\n", totalBytesRd);
 			printf("The total number of bytes sent: %d\n", totalBytesSnt);
-			
-			bzero(buffer, BUFSIZE);
-			read(clientSocket, buffer, BUFSIZE);
-			
+		
+			bzero(buffer, BUFFERSIZE);
+			read(clientSocket, buffer, BUFFERSIZE);
+		
 			bytesRcvd = atoi(buffer);
-			printf("From client: %d\n", bytesRcvd);
 
 			if (totalBytesRd == totalBytesSnt) {
 				puts("File has been successfully sent");
 
-				if (bytesRcvd == totalBytesSnt)
+				if (bytesRcvd == totalBytesSnt) {
 					puts("Client has successfully received file");
+					printf("Child process #%d finished\n", getpid());
+				}
+
 				else
 					puts("Error occured during file transmission");
 			} else
 				puts("Error occured during file transmission");
 
-			// Close the listening socket
 			close(clientSocket);
-			exit(0);
-		} else if(pid == -1) {
-			perror("Error in child processes");
-		} else if(pid > 0) {
-			close(clientSocket);
-			puts("Going back to listening");
-			continue;		
-		}
-		
-
-	int numKids = 5;
-	int procNum;
-	
-	for(procNum = 0; procNum < numKids; ++procNum) {
-		pid = fork();
-
-		if(pid == 0)
-			break;
-		
+		} // End of while loop
+	} else if(pid > 0) {
+		wait(NULL);
+	} if(pid == -1) {
+		perror("Error in child processes");
 	}
-
-	if(pid == 0)
-		printf("I am the child with pid %d\n", (int) getpid());
-
-
-
 	
-	}
-		
+	// Close Listening socket
 	close(lstnScket);
 
 	return 0;

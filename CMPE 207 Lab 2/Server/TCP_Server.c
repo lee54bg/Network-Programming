@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#define BUFSIZE 1024
+#define BUFFERSIZE 1024
 #define FILENAMESIZE 256
 
 int main(int argc, char **argv) {
@@ -20,12 +20,11 @@ int main(int argc, char **argv) {
 	bytesSnt	= 0,	// Bytes sent for each individual send
 	bytesRcvd	= 0,	// Bytes read for each individual read
 	totalBytesSnt	= 0,	// Total number of bytes sent to the client
-	totalBytesRcvd	= 0,	// Total number of bytes received from the client
 	totalBytesRd	= 0;	// Total number of bytes read from the file
 	
 	unsigned short server_port = 12345;
 
-	char buffer[BUFSIZ];
+	char buffer[BUFFERSIZE];
 	char *ip_address;
 	char file_path[FILENAMESIZE];
 	char *filename;
@@ -80,28 +79,24 @@ int main(int argc, char **argv) {
 	while(1) {
 		puts("Waiting for clients...");
 		clientSocket = accept(lstnScket, (struct sockaddr *) &remaddr, &remaddrlen);
-		
-		bzero(file_path, sizeof(file_path));	// Zero out the buffer for the file_path
+				
+		memset(file_path, 0, sizeof(file_path));	// Zero out the buffer for the file_path
 		bytesRcvd = read(clientSocket, (char *) file_path, sizeof(file_path) );	// Read the file name request from the client
 		
-		puts(file_path);	// For debugging purposes
+		totalBytesSnt	= 0;	// Set total sent to 0
+		totalBytesRd	= 0;	// Set total read to 0
+		
 
-		filedes = open(file_path, O_RDONLY);
+		filedes = open(file_path, O_RDONLY);	// File Descriptor for the open file
 
 		if (filedes == -1) {
 			perror("Error with opening file: ");
-			continue;
-		} else
-			pid = fork();
-
-		if(pid == 0) {
-			close(lstnScket);
-
+		} else {
 			// Run until the process of reading from the file and sending to the client is finished					
 			while(1) {
-				read_return = read(filedes, buffer, BUFSIZ);
-		
-				totalBytesRd += read_return;
+				read_return = read(filedes, buffer, BUFFERSIZE);
+	
+				totalBytesRd += read_return;	// Set total amount of bytes read
 
 				// Break out of loop if there's no more data to be read
 				if (read_return == 0)
@@ -115,25 +110,27 @@ int main(int argc, char **argv) {
 
 				// Send content over to the remote endpoint
 				bytesSnt = write(clientSocket, buffer, read_return);
-				
-				totalBytesSnt += bytesSnt;
-				
+			
+				totalBytesSnt += bytesSnt;	// Set total amount of bytes that have been sent
+			
 				if ( bytesSnt < 0) {
 					perror("ERROR sending to socket ");
 					exit(1);
 				}
-				bzero(buffer, BUFSIZE);
+
+				memset(buffer, 0, BUFFERSIZE);
 			}
 
 			printf("The total number of bytes read from file: %d\n", totalBytesRd);
-			printf("The total number of bytes sent: %d\n", totalBytesSnt);
-			
-			bzero(buffer, BUFSIZE);
-			read(clientSocket, buffer, BUFSIZE);
-			
+			printf("The total number of bytes sent to client: %d\n", totalBytesSnt);
+		
+			memset(buffer, 0, BUFFERSIZE);
+			read(clientSocket, buffer, BUFFERSIZE);
+		
 			bytesRcvd = atoi(buffer);
 			printf("From client: %d\n", bytesRcvd);
 
+			// Do a integrity check and ensure that the client has successfully received the file
 			if (totalBytesRd == totalBytesSnt) {
 				puts("File has been successfully sent");
 
@@ -146,18 +143,10 @@ int main(int argc, char **argv) {
 
 			// Close the listening socket
 			close(clientSocket);
-			exit(0);
-		} else if(pid == -1) {
-			perror("Error in child processes");
-		} else if(pid > 0) {
-			close(clientSocket);
-			puts("Going back to listening");
-			continue;		
 		}
-			
 	}
 		
-	close(lstnScket);
+	close(lstnScket);	// Close listening socket though this is just for safety measures
 
 	return 0;
 }
