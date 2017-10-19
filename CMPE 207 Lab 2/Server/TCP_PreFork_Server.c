@@ -15,43 +15,39 @@
 // Usage: ./TCP_PreFork_Server port_num num_of_children
 
 int main(int argc, char **argv) {
-	int lstnScket	= 0,	// Create our listening socket
+	int lstn_scket	= 0,	// Create our listening socket
 	clientSocket	= 0,	// Creating our client Socket
-	numOfChild	= 0,	// Used for creating number of children
-	socketStatus	= 0,	// Creating our socket status
+	num_of_child	= 0,	// Used for creating number of children
 	filedes		= 0,	// Creating our file Descriptor
 	pid		= 0,	// Used for identifying our process id (both child and parent)
-	bytesSnt	= 0,	// Bytes sent for each individual send
-	bytesRcvd	= 0,	// Bytes read for each individual read
-	totalBytesSnt	= 0,	// Total number of bytes sent to the client
-	totalBytesRcvd	= 0,	// Total number of bytes received from the client
-	totalBytesRd	= 0;	// Total number of bytes read from the file
+	bytes_snt	= 0,	// Bytes sent for each individual send
+	bytes_rcvd	= 0,	// Bytes read for each individual read
+	bytes_rd	= 0,	// Bytes read for each individual read
+	total_bytes_snt	= 0,	// Total number of bytes sent to the client
+	total_bytes_rd	= 0;	// Total number of bytes read from the file
 	
 	unsigned short server_port = 12345;	// Port number to be used to bind to local endpoint
 
-	char buffer[BUFFERSIZE];	//
-	char *ip_address;		//
-	char file_path[FILENAMESIZE];	//
-	char *filename;			//
+	char buffer[BUFFERSIZE];	// Buffer used for sending and receiving data
+	char file_path[FILENAMESIZE];	// This will be our file name
 
-	struct sockaddr_in localaddr, remaddr;	// Creating local and remote endpoints
-
-	ssize_t read_return;
+	// Creating local and remote endpoints
+	struct sockaddr_in localaddr, remaddr;
 
 	// Getting the length of both local and remote sockets
 	socklen_t localaddrlen	= sizeof(localaddr);
 	socklen_t remaddrlen	= sizeof(remaddr);
 	
-	memset(&localaddr, 0, sizeof(localaddr));	// Zero out the buffer for the local address
+	// Zero out the local and remote address
+	memset( &localaddr, 0, sizeof(localaddr) );
+	memset( &remaddr, 0, sizeof(remaddr) );
 
 	switch(argc) {
-		case 2:
-			server_port	= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server	
-			break;	
 		case 3:
-			server_port	= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server
-			numOfChild	= atoi(argv[2]);
-			break;
+			// Port number to be used for connecting to the server	
+			server_port	= strtol(argv[1], NULL, 10);
+			num_of_child	= atoi(argv[2]);
+			break;	
 		default:
 			puts("Not enough arguments.  Terminating server...");
 			exit(EXIT_FAILURE);
@@ -59,10 +55,10 @@ int main(int argc, char **argv) {
 	}
 
 	// Create the socket with the following paremeters
-	lstnScket = socket(AF_INET, SOCK_STREAM, 0);
+	lstn_scket = socket(AF_INET, SOCK_STREAM, 0);
 	
 	// Check to ensure that the socket connects
-	if ( lstnScket < 0) {
+	if ( lstn_scket < 0) {
 		perror("Unable to create socket.  Terminating...");
 		exit(EXIT_FAILURE);
 	}
@@ -73,18 +69,18 @@ int main(int argc, char **argv) {
 	localaddr.sin_port		= htons(server_port);
 
 	// Ensure that the local endpoint has been binding to our created socket
-	if ( bind(lstnScket, (struct sockaddr *) &localaddr, localaddrlen ) == -1) {
+	if ( bind(lstn_scket, (struct sockaddr *) &localaddr, localaddrlen ) == -1) {
 		perror("Error in binding");
 		exit(1);
 	}
 
-	if ( listen(lstnScket, 10) < 0 )
+	if ( listen(lstn_scket, 10) < 0 )
 		perror("Error on listen: ");
 
 	// Count number of children
-	int cntChld;
+	int cnt_chld;
 		
-	for(cntChld = 0; cntChld < numOfChild; ++cntChld) {
+	for(cnt_chld = 0; cnt_chld < num_of_child; ++cnt_chld) {
 		pid = fork();
 		
 		if(pid == 0)
@@ -94,20 +90,20 @@ int main(int argc, char **argv) {
 	if(pid == 0) {
 		// Start Server process
 		while(1) {
-			bzero(file_path, sizeof(file_path));	// Zero out the buffer for the file_path
-			totalBytesRd	= 0;
-			totalBytesSnt	= 0;
+			// Zero out the buffer for the file_path
+			memset(file_path, 0, sizeof(file_path));
+
+			total_bytes_rd	= 0;
+			total_bytes_snt	= 0;
 
 			// Debugging purposes
 			printf("Child process #%d waiting for clients\n", getpid());
 
-			clientSocket = accept(lstnScket, (struct sockaddr *) &remaddr, &remaddrlen);
-			// sleep(10);
-		
-			bytesRcvd = read(clientSocket, (char *) file_path, sizeof(file_path) );	// Read the file name request from the client
-		
-			puts(file_path);	// For debugging purposes
+			clientSocket = accept(lstn_scket, (struct sockaddr *) &remaddr, &remaddrlen);
 
+			// Read the file name request from the client
+			bytes_rcvd = read(clientSocket, (char *) file_path, sizeof(file_path) );
+		
 			filedes = open(file_path, O_RDONLY);
 
 			if (filedes == -1) {
@@ -117,44 +113,44 @@ int main(int argc, char **argv) {
 
 			// Run until the process of reading from the file and sending to the client is finished					
 			while(1) {
-				read_return = read(filedes, buffer, BUFFERSIZE);
+				bytes_rd = read(filedes, buffer, BUFFERSIZE);
 	
-				totalBytesRd += read_return;
+				total_bytes_rd += bytes_rd;
 
 				// Break out of loop if there's no more data to be read
-				if (read_return == 0)
+				if (bytes_rd == 0)
 				    break;
 
 				// Exit if there's an error in reading
-				if (read_return == -1) {
+				if (bytes_rd == -1) {
 				    perror("Error in reading the file: ");
 				    exit(EXIT_FAILURE);
 				}
 
 				// Send content over to the remote endpoint
-				bytesSnt = write(clientSocket, buffer, read_return);
+				bytes_snt = write(clientSocket, buffer, bytes_rd);
 			
-				totalBytesSnt += bytesSnt;
+				total_bytes_snt += bytes_snt;
 			
-				if ( bytesSnt < 0) {
+				if ( bytes_snt < 0) {
 					perror("ERROR sending to socket ");
 					exit(1);
 				}
-				bzero(buffer, BUFFERSIZE);
+				memset(buffer, 0, BUFFERSIZE);
 			}
 
-			printf("The total number of bytes read from file: %d\n", totalBytesRd);
-			printf("The total number of bytes sent: %d\n", totalBytesSnt);
+			printf("The total number of bytes read from file: %d\n", total_bytes_rd);
+			printf("The total number of bytes sent: %d\n", total_bytes_snt);
 		
-			bzero(buffer, BUFFERSIZE);
+			memset(buffer, 0, BUFFERSIZE);
 			read(clientSocket, buffer, BUFFERSIZE);
 		
-			bytesRcvd = atoi(buffer);
+			bytes_rcvd = atoi(buffer);
 
-			if (totalBytesRd == totalBytesSnt) {
+			if (total_bytes_rd == total_bytes_snt) {
 				puts("File has been successfully sent");
 
-				if (bytesRcvd == totalBytesSnt) {
+				if (bytes_rcvd == total_bytes_snt) {
 					puts("Client has successfully received file");
 					printf("Child process #%d finished\n", getpid());
 				}
@@ -173,7 +169,7 @@ int main(int argc, char **argv) {
 	}
 	
 	// Close Listening socket
-	close(lstnScket);
+	close(lstn_scket);
 
 	return 0;
 }

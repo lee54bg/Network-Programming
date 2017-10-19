@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
 	socklen_t localaddrlen	= sizeof(localaddr);	// Length of our local address
 	socklen_t remaddrlen	= sizeof(remaddr);	// Length of our remote address
 	
-	memset( &localaddr, 0, sizeof(localaddr) );	// Zero out the local address
-	memset( &remaddr, 0, sizeof(remaddr) );		// Zero out the remote address
+	memset( &localaddr, 0, localaddrlen );	// Zero out the local address
+	memset( &remaddr, 0, remaddrlen );		// Zero out the remote address
 
 	switch(argc) {
 		case 2:

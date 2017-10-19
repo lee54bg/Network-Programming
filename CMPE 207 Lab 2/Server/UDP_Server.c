@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#define BUFFERSIZE 1024
+#define BUFFERSIZE 512
 #define FILENAMESIZE 256
 
 int main(int argc, char **argv) {
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 					
 					// puts(buffer);
 
-					totalBytesRd += read_return;
+					totalBytesRd += read_return;						
 
 					// Break out of loop if there's no more data to be read
 					if (read_return <= 0)
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 						exit(1);
 					}
 
-					memset(buffer, 0, BUFFERSIZE);					
+					memset(buffer, '\0', BUFFERSIZE);					
 				}
 
 				printf("The total number of bytes read from file: %d\n", totalBytesRd);

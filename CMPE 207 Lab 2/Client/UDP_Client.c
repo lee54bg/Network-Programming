@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <fcntl.h>
-#define BUFFERSIZE 1024
+#define BUFFERSIZE 512
 #define FILENAMESIZE 256
 
 int main(int argc, char **argv) {
@@ -83,10 +83,13 @@ int main(int argc, char **argv) {
 		perror("Error in creating file");
             	exit(EXIT_FAILURE);
 	}
-
+	
+	char *tempbuff;
 	while(1) {
-		bytesRcvd = recvfrom(network_socket, buffer, BUFFERSIZE, 0, (struct sockaddr*) &remaddr, &remaddrlen);
+		bytesRcvd = recvfrom(network_socket, tempbuff, sizeof(tempbuff), 0, (struct sockaddr*) &remaddr, &remaddrlen);
 		
+		puts(buffer);
+
 		if(bytesRcvd <= 0)
 			break;
 
@@ -106,7 +109,7 @@ int main(int argc, char **argv) {
 			exit(1);
 		}
 		
-		memset(buffer, 0, BUFFERSIZE);
+		memset(buffer, '\0', BUFFERSIZE);
 	}
 
 	printf("The total number of bytes received: %d\n", totalBytesRcvd);

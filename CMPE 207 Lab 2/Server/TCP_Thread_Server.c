@@ -17,18 +17,12 @@ void *client_handler(void *client_socket);
 int main(int argc, char **argv) {
 	int lstnScket	= 0,	// Create our listening socket
 	clientSocket	= 0,	// Creating our client Socket
-	socketStatus	= 0,	// Creating our socket status
 	filedes		= 0,	// Creating our file Descriptor
-	pid		= 0,	// Used for identifying our process id (both child and parent)
-	bytesSnt	= 0,	// Bytes sent for each individual send
-	bytesRcvd	= 0,	// Bytes read for each individual read
-	totalBytesRcvd	= 0;	// Total number of bytes received from the client
+	pid		= 0;	// Used for identifying our process id (both child and parent)
 	
-	unsigned short server_port = 12345;
+	unsigned short server_port;
 
-	char *ip_address;
 	char file_path[FILENAMESIZE];
-	char *filename;
 
 	struct sockaddr_in localaddr, remaddr;			// Creating local and remote endpoints
 
@@ -36,16 +30,13 @@ int main(int argc, char **argv) {
 	socklen_t localaddrlen	= sizeof(localaddr);
 	socklen_t remaddrlen	= sizeof(remaddr);
 	
-	memset( (char *) &localaddr, 0, sizeof(localaddr) );	// Zero out the local address
+	memset( &localaddr, 0, localaddrlen );	// Zero out the local address
+	memset( &remaddr, 0, remaddrlen );	// Zero out the remote address
 
 	switch(argc) {
 		case 2:
 			server_port	= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server	
 			break;	
-		case 3:
-			ip_address	= argv[1];			// IP Address in ASCII form
-			server_port	= strtol(argv[2], NULL, 10);	// Port number to be used for connecting to the server
-			break;
 		default:
 			puts("Not enough arguments.  Terminating server...");
 			exit(EXIT_FAILURE);
@@ -93,24 +84,22 @@ int main(int argc, char **argv) {
 
 void *client_handler(void *client_socket) {
 	int clientSocket = *(int*) client_socket,	// Creating our client Socket
-	socketStatus	= 0,	// Creating our socket status
 	filedes		= 0,	// Creating our file Descriptor
-	bytesSnt	= 0,	// Bytes sent for each individual send
-	bytesRcvd	= 0,	// Bytes read for each individual read
-	totalBytesSnt	= 0,	// Total number of bytes sent to the client
-	totalBytesRcvd	= 0,	// Total number of bytes received from the client
-	totalBytesRd	= 0;	// Total number of bytes read from the file
+	bytes_snt	= 0,	// Bytes sent for each individual send
+	bytes_rcvd	= 0,	// Bytes read for each individual read
+	bytes_rd	= 0,	// Bytes read for each individual read
+	total_bytes_snt		= 0,	// Total number of bytes sent to the client
+	total_bytes_rcvd	= 0,	// Total number of bytes received from the client
+	total_bytes_rd		= 0;	// Total number of bytes read from the file
 
 	char buffer[BUFFERSIZE];
 	char file_path[FILENAMESIZE];
 
-	ssize_t read_return;
-
-	bzero(file_path, sizeof(file_path));	// Zero out the buffer for the file_path
-	bytesRcvd = read(clientSocket, &file_path, sizeof(file_path) );	// Read the file name request from the client
+	// Zero out the buffer for the file_path
+	memset(file_path, 0, sizeof(file_path));
+	// Read the file name request from the client
+	bytes_rcvd = read(clientSocket, &file_path, sizeof(file_path) );
 	
-	puts(file_path);	// Debugging purposes
-
 	filedes = open(file_path, O_RDONLY);
 
 	if (filedes == -1) {
@@ -120,44 +109,47 @@ void *client_handler(void *client_socket) {
 
 	// Run until the process of reading from the file and sending to the client is finished					
 	while(1) {
-		read_return = read(filedes, buffer, BUFSIZ);
+		printf("Thread ID %ld initiated\n", pthread_self());
 
-		totalBytesRd += read_return;
+		bytes_rd = read(filedes, buffer, BUFFERSIZE);
+
+		total_bytes_rd += bytes_rd;
 
 		// Break out of loop if there's no more data to be read
-		if (read_return == 0)
+		if (bytes_rd == 0)
 		    break;
 
 		// Exit if there's an error in reading
-		if (read_return == -1) {
+		if (bytes_rd == -1) {
 		    perror("Error in reading the file: ");
 		    exit(EXIT_FAILURE);
 		}
 
 		// Send content over to the remote endpoint
-		bytesSnt = write(clientSocket, buffer, read_return);
+		bytes_snt = write(clientSocket, buffer, bytes_rd);
 		
-		totalBytesSnt += bytesSnt;
+		total_bytes_snt += bytes_snt;
 		
-		if ( bytesSnt < 0) {
+		if ( bytes_snt < 0) {
 			perror("ERROR sending to socket ");
 			exit(1);
 		}
-		bzero(buffer, BUFFERSIZE);
+
+		memset(buffer, 0, BUFFERSIZE);
 	}
 
-	printf("The total number of bytes read from file: %d\n", totalBytesRd);
-	printf("The total number of bytes sent: %d\n", totalBytesSnt);
+	printf("The total number of bytes read from file: %d\n", total_bytes_rd);
+	printf("The total number of bytes sent: %d\n", total_bytes_snt);
 	
-	bzero(buffer, BUFFERSIZE);
+	memset(buffer, 0, BUFFERSIZE);
 	read(clientSocket, buffer, BUFFERSIZE);
 	
-	bytesRcvd = atoi(buffer);
+	bytes_rcvd = atoi(buffer);
 
-	if (totalBytesRd == totalBytesSnt) {
+	if (total_bytes_rd == total_bytes_snt) {
 		puts("File has been successfully sent");
 
-		if (bytesRcvd == totalBytesSnt)
+		if (bytes_rcvd == total_bytes_snt)
 			puts("Client has successfully received file");
 		else
 			puts("Error occured during file transmission");
@@ -165,6 +157,8 @@ void *client_handler(void *client_socket) {
 		puts("Error occured during file transmission");
 
 	// Close the listening socket
+	close(filedes);
 	close(clientSocket);
-	exit(0);
+
+	pthread_exit(NULL);
 }
