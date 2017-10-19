@@ -1,4 +1,11 @@
-// Server side C/C++ program to demonstrate Socket programming
+/*
+ * Author: Brandon Lee Gaerlan, Timothy Fong, Asvin Peiris
+ * Class: CMPE 207 Network Programming and Applications
+ * Program: Create a TCP Client and UDP Client along with multiple types of TCP and UDP Servers to
+ * simulate file transfer.  Lab specifications available in the sheet the professor provided us.
+ * Due Date: 10-19-2017
+ * */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,18 +51,15 @@ int main(int argc, char **argv) {
 		perror("Error in socket creation : ");
 		exit(EXIT_FAILURE);
 	}	
-
+	
+	// Clearing out the buffers of the remote address and our buffer
 	memset((char *) &remaddr, 0, sizeof(remaddr));
 	memset((char *) &buffer, 0, sizeof(buffer));
 
+	// Set the address family to be IPv4
 	remaddr.sin_family	= AF_INET;
 	
 	switch(argc) {
-		case 2:
-			file_path = argv[1];
-			remaddr.sin_port	= htons(3002);
-			remaddr.sin_addr.s_addr	= INADDR_ANY;
-			break;	
 		case 3:
 			server_port		= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server
 			file_path = argv[2];
@@ -70,7 +74,10 @@ int main(int argc, char **argv) {
 
 			remaddr.sin_port	= htons(server_port);		// Port Number of our server
 			remaddr.sin_addr.s_addr	= inet_addr(ip_address);	// IP Address of our server
-			break;	
+			break;
+		default:
+			printf("Not enough arguments.  Terminating program...");
+			break;
 	}
 	
 	// Connect to the server
