@@ -14,19 +14,17 @@
 #define FILENAMESIZE 256
 
 int main(int argc, char **argv) {
-	int network_socket	= 0,	// Create socket
+	int server_socket	= 0,	// Create our server socket file descriptor
 	filedes			= 0,	// Create File Descriptor
-	socketStatus		= 0,	// Monitor status of the socket that's being created
-	bytesSnt		= 0,
-	bytesRcvd		= 0,
-	totalBytesSnt		= 0,	// Total number of bytes sent to the server
-	totalBytesRcvd		= 0;	// Total number of bytes received from the server
+	socket_status		= 0,	// Monitor status of the socket that's being created for the initial connect
+	bytes_rcvd		= 0,	// Used to hold the number of bytes read in a single read call
+	total_bytes_rcvd	= 0;	// Total number of bytes received from the server
 	
 	
 	char buffer[BUFFERSIZE];	// Buffer to be used for reading and writing data
-	char *file_path;	// The file name to be sent to the server
-	char *ip_address;	// The name of the ip address to be used to connect to the server
-	ssize_t read_return;	// Size of the buffer to be used for reading and writing to the file
+	char *file_path;		// The file name to be sent to the server
+	char *ip_address;		// The name of the ip address to be used to connect to the server
+	ssize_t read_return;		// Size of the buffer to be used for reading and writing to the file
 
 	unsigned short server_port = 12345;	// Port number to be used for connection
 	struct sockaddr_in hostaddr, remaddr;	// Initialize client and server address data structure
@@ -34,17 +32,17 @@ int main(int argc, char **argv) {
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
-	socklen_t locaddrlen = sizeof(hostaddr);	// Length of our locaddrlen
-	socklen_t remaddrlen = sizeof(remaddr);		// Length of our remaddrlen
+	socklen_t remaddrlen = sizeof(remaddr);		// Length of our remote address
 	
-	network_socket = socket(AF_INET, SOCK_STREAM, 0);
-	setsockopt(network_socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout, sizeof(timeout));
+	server_socket = socket(AF_INET, SOCK_STREAM, 0);
+	setsockopt(server_socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout, sizeof(timeout));
 
-	if ( network_socket < 0)
+	if ( server_socket < 0)
 		printf("Socket doesn't work");
 
 	memset((char *) &remaddr, 0, sizeof(remaddr));
 	memset((char *) &buffer, 0, sizeof(buffer));
+
 	remaddr.sin_family	= AF_INET;
 	
 	switch(argc) {
@@ -70,15 +68,15 @@ int main(int argc, char **argv) {
 			break;	
 	}
 
-	socketStatus = connect(network_socket, (struct sockaddr *) &remaddr, remaddrlen);
+	socket_status = connect(server_socket, (struct sockaddr *) &remaddr, remaddrlen);
 
-	if(socketStatus < 0) {
+	if(socket_status < 0) {
 		perror("Unable to establish connection");
             	exit(EXIT_FAILURE);
 	}
 	
 	// Send file name to the server to be read and check for errors
-	if ( ( write(network_socket, file_path, sizeof(file_path)) ) == -1) {
+	if ( ( write(server_socket, file_path, sizeof(file_path)) ) == -1) {
 		perror("Failed to write to file");
 		exit(EXIT_FAILURE);
 	}
@@ -93,34 +91,34 @@ int main(int argc, char **argv) {
 	}
 
 	while(1) {
-		read_return = read(network_socket, buffer, BUFFERSIZE);
+		bytes_rcvd = read(server_socket, buffer, BUFFERSIZE);
 		
-		if(read_return <= 0)
+		if(bytes_rcvd <= 0)
 			break;
 
-		totalBytesRcvd += read_return;
+		total_bytes_rcvd += bytes_rcvd;
 
-		if (read_return == -1) {
+		if (bytes_rcvd == -1) {
                 	perror("read");
 	                exit(EXIT_FAILURE);
 		}
 
-		if (write(filedes, buffer, read_return) == -1) {
+		if (write(filedes, buffer, bytes_rcvd) == -1) {
 			perror("Failed to write to file");
 			exit(EXIT_FAILURE);
 		}
 		
-		bzero(buffer, BUFFERSIZE);
+		memset(buffer, 0, BUFFERSIZE);
 	}
 
-	printf("The total number of bytes received: %d\n", totalBytesRcvd);
+	printf("The total number of bytes received: %d\n", total_bytes_rcvd);
 
-	bzero(buffer, BUFFERSIZE);
-	sprintf(buffer, "%d", totalBytesRcvd);
-	write(network_socket, buffer, BUFFERSIZE);	// Sending the amount of bytes received to the server
+	memset(buffer, 0, BUFFERSIZE);
+	sprintf(buffer, "%d", total_bytes_rcvd);
+	write(server_socket, buffer, BUFFERSIZE);	// Sending the amount of bytes received to the server
 
 	close(filedes);
-	close(network_socket);
+	close(server_socket);
 
 	return 0;
 }
