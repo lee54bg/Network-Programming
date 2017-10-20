@@ -31,6 +31,7 @@ int main(int argc, char **argv) {
 
 	// Creating local and remote endpoints
 	struct sockaddr_in localaddr, remaddr;
+	struct hostent *clientinfo;
 
 	// Getting the length of both local and remote sockets
 	socklen_t localaddrlen	= sizeof(localaddr);
@@ -38,7 +39,6 @@ int main(int argc, char **argv) {
 	
 	// Zero out the local address
 	memset( &localaddr, 0, sizeof(localaddr) );
-	memset( &remaddr, 0, sizeof(remaddr) );
 
 	switch(argc) {
 		case 2:
@@ -73,17 +73,22 @@ int main(int argc, char **argv) {
 
 	while(1) {
 		puts("Waiting for clients...");
-				
-		memset(file_path, 0, sizeof(file_path));	// Zero out the buffer for the file_path
+		
+		// Zero out the buffer for the file_path
+		memset(file_path, 0, sizeof(file_path));
 
-		recvfrom(lstn_scket, file_path, FILENAMESIZE, 0, (struct sockaddr*) &remaddr, &remaddrlen);
-	
+		bytesRcvd	= recvfrom(lstn_scket, file_path, FILENAMESIZE, 0, (struct sockaddr*) &remaddr, &remaddrlen);
+		clientinfo	= gethostbyaddr((char*) &remaddr.sin_addr.s_addr, sizeof(remaddr.sin_addr.s_addr), AF_INET);
+
 		filedes = open(file_path, O_RDONLY);
 
 		if (filedes == -1) {
 			perror("Error with opening file: ");
 			continue;
-		} else {
+		} else 
+			pid = fork();
+
+		if(pid == 0) {
 			printf("Child process %d\n", getpid());
 			
 			total_bytes_rd	= 0;
@@ -93,6 +98,8 @@ int main(int argc, char **argv) {
 			while(1) {
 				bytes_rd = read(filedes, buffer, BUFFERSIZE);
 				
+				// puts(buffer);
+
 				total_bytes_rd += bytes_rd;						
 
 				// Break out of loop if there's no more data to be read
@@ -120,9 +127,12 @@ int main(int argc, char **argv) {
 
 			printf("The total number of bytes read from file: %d\n", total_bytes_rd);
 			printf("The total number of bytes sent: %d\n", total_bytes_snt);
-
-			// Close the listening socket
-			close(filedes);
+		
+			exit(0);
+		} else if(pid == -1) {
+			perror("Error in creating child processes");
+		} else {
+			continue;
 		}
 	}
 		

@@ -166,6 +166,7 @@ void *client_handler(void *listen_socket) {
 			puts("Error occured during file transmission");
 
 		// Close the listening socket
+		close(filedes);		
 		close(client_socket);
 	}
 	

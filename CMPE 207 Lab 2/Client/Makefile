@@ -1,7 +1,7 @@
 default: clean compile
 
 compile:
-	gcc TCP_Client.c -o TCP_Client
+	gcc UDP_Client.c -o UDP_Client
 	
 clean: 
-	rm -f TCP_Client
+	rm -f UDP_Client

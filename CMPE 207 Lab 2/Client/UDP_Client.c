@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 	bytesSnt		= 0,
 	bytesRcvd		= 0,
 	totalBytesSnt		= 0,	// Total number of bytes sent to the server
-	totalBytesRcvd		= 0;	// Total number of bytes received from the server
+	total_bytes_rcvd	= 0;	// Total number of bytes received from the server
 		
 	char buffer[BUFFERSIZE];	// Buffer to be used for reading and writing data
 	char *file_path;	// The file name to be sent to the server
@@ -29,12 +29,13 @@ int main(int argc, char **argv) {
 
 	unsigned short server_port = 12345;	// Port number to be used for connection
 	struct hostent *server_info;		// Used to hold server information
-	struct sockaddr_in remaddr;	// Initialize client and server address data structure
+	struct sockaddr_in remaddr;		// Initialize client and server address data structure
 	struct timeval timeout;			// Set the timeout for the socket so that the socket is not stuck on read
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
-	socklen_t remaddrlen = sizeof(remaddr);		// Length of our remaddrlen
+	// Length of our remaddrlen
+	socklen_t remaddrlen = sizeof(remaddr);
 	
 	network_socket = socket(AF_INET, SOCK_DGRAM, 0);
 	setsockopt(network_socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout, sizeof(timeout));
@@ -42,8 +43,8 @@ int main(int argc, char **argv) {
 	if ( network_socket < 0)
 		printf("Socket doesn't work");
 
-	memset((char *) &remaddr, 0, sizeof(remaddr));
-	memset((char *) &buffer, 0, sizeof(buffer));
+	memset(&remaddr, 0, sizeof(remaddr));
+	memset(buffer, 0, sizeof(buffer));
 	remaddr.sin_family	= AF_INET;
 	
 	switch(argc) {
@@ -84,23 +85,25 @@ int main(int argc, char **argv) {
             	exit(EXIT_FAILURE);
 	}
 	
-	char *tempbuff;
-	while(1) {
-		bytesRcvd = recvfrom(network_socket, tempbuff, sizeof(tempbuff), 0, (struct sockaddr*) &remaddr, &remaddrlen);
-		
-		puts(buffer);
 
+	while(1) {
+		// Read the contents from the network socket
+		bytesRcvd = recvfrom(network_socket, buffer, BUFFERSIZE, 0, (struct sockaddr*) &remaddr, &remaddrlen);
+		
+		// Break from the loop if there are no more data to be read
 		if(bytesRcvd <= 0)
 			break;
 
-		totalBytesRcvd += bytesRcvd;
+		// Sum up the total number of bytes read
+		total_bytes_rcvd += bytesRcvd;
 
+		// Exit if there's an error reading the socket
 		if (bytesRcvd < 0) {
                 	perror("read");
 	                exit(EXIT_FAILURE);
 		}
 
-		bytesSnt = write(filedes, buffer, BUFFERSIZE);
+		bytesSnt = write(filedes, buffer, bytesRcvd);
 				
 		totalBytesSnt += bytesSnt;
 				
@@ -109,14 +112,11 @@ int main(int argc, char **argv) {
 			exit(1);
 		}
 		
+		// Clear the buffer with null characters
 		memset(buffer, '\0', BUFFERSIZE);
 	}
 
-	printf("The total number of bytes received: %d\n", totalBytesRcvd);
-
-	memset(buffer, 0, BUFFERSIZE);
-	sprintf(buffer, "%d", totalBytesRcvd);
-	write(network_socket, buffer, BUFFERSIZE);	// Sending the amount of bytes received to the server
+	printf("The total number of bytes received: %d\n", total_bytes_rcvd);
 
 	close(filedes);
 	close(network_socket);
