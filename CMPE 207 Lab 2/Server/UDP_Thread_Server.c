@@ -28,8 +28,6 @@ int main(int argc, char **argv) {
 	
 	unsigned short server_port = 12345;
 
-	char *ip_address;
-
 	struct sockaddr_in localaddr;			// Creating local and remote endpoints
 
 	// Getting the length of both local and remote sockets
@@ -41,10 +39,6 @@ int main(int argc, char **argv) {
 		case 2:
 			server_port	= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server	
 			break;	
-		case 3:
-			ip_address	= argv[1];			// IP Address in ASCII form
-			server_port	= strtol(argv[2], NULL, 10);	// Port number to be used for connecting to the server
-			break;
 		default:
 			puts("Not enough arguments.  Terminating server...");
 			exit(EXIT_FAILURE);

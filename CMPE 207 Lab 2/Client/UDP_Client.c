@@ -47,19 +47,7 @@ int main(int argc, char **argv) {
 	memset(buffer, 0, sizeof(buffer));
 	remaddr.sin_family	= AF_INET;
 	
-	switch(argc) {
-		case 2:
-			file_path = argv[1];
-			remaddr.sin_port	= htons(3002);
-			remaddr.sin_addr.s_addr	= INADDR_ANY;
-			break;	
-		case 3:
-			server_port		= strtol(argv[1], NULL, 10);	// Port number to be used for connecting to the server
-			file_path = argv[2];
-			
-			remaddr.sin_port	= htons(server_port);		// Port Number of our server
-			remaddr.sin_addr.s_addr	= INADDR_ANY;			// Any IP address to be used locally
-			break;	
+	switch(argc) {	
 		case 4:
 			ip_address		= argv[1];			// IP Address in ASCII form
 			server_port		= strtol(argv[2], NULL, 10);	// Port number to be used for connecting to the server
