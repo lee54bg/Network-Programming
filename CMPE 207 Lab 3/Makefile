@@ -1,6 +1,10 @@
 default: clean compile
 
-compile:
+compile: httpclient httpserver
+	
+httpclient:
 	gcc httpclient.c -o httpclient
-clean: 
-	rm -f httpclient
+httpserver:
+	gcc httpserver.c -o httpserver
+clean:
+	rm -f httpclient httpserver

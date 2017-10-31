@@ -56,14 +56,18 @@ int main(int argc, char **argv) {
 	switch(argc) {
 		/*
 		case 3:
-			host_site	= gethostbyname(argv[1]);	// IP Address in ASCII form
-			server_port	= atoi(argv[2]);		// Port number to be used for connecting to the server
+			// IP Address in ASCII form
+			host_site = gethostbyname(argv[1]);
+	
+			// Port number to be used for connecting to the server
+			server_port = atoi(argv[2]);
 
-			remaddr.sin_port	= htons(server_port);		// Port Number of our server
+			// Port Number of our server
+			remaddr.sin_port = htons(server_port);
 			bcopy((char *) host_site->h_addr, (char *) &remaddr.sin_addr.s_addr, host_site->h_length);
 
-			httpreq = malloc(strlen("GET ") + strlen("HTTP/1.1\r\n") + strlen("Host: ") + strlen(argv[1]) + strlen("\r\n\n") + 1);
-			sprintf(httpreq, "GET HTTP/1.1\r\nHost: %s\r\n\r\n", argv[1]);
+			httpreq = malloc(strlen("GET /\r\n") + 1);
+			httpreq = "GET /\r\n";
 			puts(httpreq);
 			break;
 		*/
