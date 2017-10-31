@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 	total_bytes_rcvd	= 0;	// Total number of bytes received from the server
 	
 	char buffer[BUFFERSIZE];	// Buffer to be used for reading and writing data
-	char *file_path = "http_file";	// The file name to be sent to the server
+	char file_path[] = "http_file";	// The file name to be sent to the server
 	char *file_name;
 	char *httpreq;
 
@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
 			break;
 		default:
 			printf("Insufficient and/or invalid arguments.  Terminating program...\n");
+			exit(EXIT_FAILURE);
 	}
 	
 	// Connect to the server
@@ -103,6 +104,8 @@ int main(int argc, char **argv) {
 	
 	// if theres an error, then terminate the program, otherwise continue with normal read operation
 	if (file_desc == -1) {
+		free(file_name);
+		free(httpreq);
 		perror("Error in creating file");
             	exit(EXIT_FAILURE);
 	} else {

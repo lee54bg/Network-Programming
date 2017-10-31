@@ -13,15 +13,18 @@
 int create_socket();
 
 int main(int argc, char **argv) {
-	int lstn_scket	= 0,	// Create our listening socket
-	client_socket	= 0,	// Creating our client Socket
-	file_desc	= 0,	// Creating our file Descriptor
-	bytes_snt	= 0,	// Bytes sent for each individual send
-	bytes_rcvd	= 0,	// Bytes read for each individual read
-	bytes_rd	= 0;	// Bytes read for each individual read
-	
+	// Create our listening socket
+	int lstn_scket	= 0,
+	// Creating our client Socket
+	client_socket	= 0,
+	// Creating our file Descriptor
+	file_desc	= 0,
+	// Bytes sent for each individual send
+	bytes_snt	= 0,
+	// Bytes read for each individual read
+	bytes_rd	= 0,
 	// Our port number for our listening socket
-	int server_port;
+	server_port	= 0;
 	
 	// Buffer used for sending and receiving data
 	char buffer[BUFFERSIZE];
@@ -80,7 +83,7 @@ int main(int argc, char **argv) {
 		http_not_found = "HTTP/1.1 404 Not Found\n";
 
 		// Read the request of the client and put that in the buffer
-		bytes_rcvd = recv(client_socket, buffer, sizeof(buffer), 0);
+		recv(client_socket, buffer, sizeof(buffer), 0);
 	
 		sscanf(buffer, "%s %s", get, file_name);
 
@@ -97,17 +100,16 @@ int main(int argc, char **argv) {
 			while(1) {
 				bytes_rd = read(file_desc, buffer, BUFFERSIZE);
 
-				// Exit if there's an error in reading
+				// Exit if there's nothing more to read from the buffer
 				if (bytes_rd == -1)
 					break;
-
-				if (bytes_rd == 0)
+				else if (bytes_rd == 0)
 					continue;
 		
 				// Send content over to the remote endpoint
-				bytes_snt = write(client_socket, buffer, bytes_rd);
+				bytes_snt = send(client_socket, buffer, bytes_rd, 0);
 			
-				if ( bytes_snt == -1) {
+				if (bytes_snt == -1) {
 					perror("ERROR sending to socket ");
 					exit(1);
 				}
@@ -140,6 +142,10 @@ int create_socket() {
 		perror("Unable to create socket.  Terminating...");
 		exit(EXIT_FAILURE);
 	}
+
+	int enable = 1;
+	// Reuse the IP address
+	setsockopt(lstn_scket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int) < 0);
 	
 	return lstn_scket;
 }
