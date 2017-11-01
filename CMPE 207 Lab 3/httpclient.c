@@ -1,10 +1,9 @@
 /*
  * Author: Brandon Lee Gaerlan, Timothy Fong, Asvin Peiris
  * Class: CMPE 207 Network Programming and Applications
- * Program: Create a TCP Client and UDP Client along with multiple types of TCP and UDP Servers to
- * simulate file transfer.  Lab specifications available in the sheet the professor provided us.
- * Due Date: 10-19-2017
- * */
+ * Program: Create a HTTP Client and HTTP Server
+ * Due Date: 10-31-2017
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +16,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <time.h>
 #define BUFFERSIZE 576
 #define FILENAMESIZE 256
 
@@ -92,6 +92,9 @@ int main(int argc, char **argv) {
 		perror("Error in creating file");
             	exit(EXIT_FAILURE);
 	} else {
+		time_t start, end;
+		start = time(NULL);
+
 		// Send file name to the server to be read and check for errors
 		if ( ( send(server_socket, httpreq, strlen(httpreq), 0) ) == -1) {
 			perror("Failed to write to file");
@@ -116,7 +119,10 @@ int main(int argc, char **argv) {
 		
 			memset(buffer, 0, BUFFERSIZE);
 		}
+		
+		end = time(NULL);
 
+		printf("Time elapsed to fetch file: %ld\n", (end - start) );
 		printf("Total bytes received: %d\n", total_bytes_rcvd);
 
 		free(file_name);
