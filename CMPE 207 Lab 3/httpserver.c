@@ -103,10 +103,33 @@ int main(int argc, char **argv) {
 			printf("File name: %s sent\n", file_name);
 			puts("Sending 404");
 			send(client_socket, http_not_found, strlen(http_not_found), 0);
-			continue;
+			
+			file_desc = open("not_found.html", O_RDONLY);
+		
+			// Run until the process of reading from the file and sending to the client is finished					
+			while(1) {
+							
+				bytes_rd = read(file_desc, buffer, BUFFERSIZE);
+
+				// Exit if there's nothing more to read from the buffer
+				if (bytes_rd == -1) {
+					break;
+				} else if (bytes_rd == 0)
+					break;
+			
+				// Send content over to the remote endpoint
+				bytes_snt = send(client_socket, buffer, bytes_rd, 0);
+			
+				if (bytes_snt == -1) {
+					perror("ERROR sending to socket ");
+					exit(1);
+				}
+
+				memset(buffer, 0, BUFFERSIZE);
+			}
 		} else {
 			send(client_socket, http_ok, strlen(http_ok), 0);
-
+			
 			// Run until the process of reading from the file and sending to the client is finished					
 			while(1) {
 				bytes_rd = read(file_desc, buffer, BUFFERSIZE);
@@ -127,8 +150,6 @@ int main(int argc, char **argv) {
 
 				memset(buffer, 0, BUFFERSIZE);
 			}
-
-			puts("Finished the while loop");
 		}
 
 		close(client_socket);
