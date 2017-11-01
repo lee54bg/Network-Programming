@@ -70,6 +70,11 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
+char *get		= (char *) malloc(BUFFERSIZE);
+		char *file_name		= (char *) malloc(BUFFERSIZE / 2);
+		// Used to ignore the slash that's present in the file name
+		char *new_file_name	= (char *) malloc(BUFFERSIZE / 2);
+
 	while(1) {
 		puts("Waiting for clients...");
 		client_socket = accept(lstn_scket, (struct sockaddr *) &remaddr, &remaddrlen);
@@ -79,8 +84,7 @@ int main(int argc, char **argv) {
 		char http_ok[]		= "HTTP/1.1 200 OK\n";
 		char http_not_found[]	= "HTTP/1.1 404 Not Found\n";
 		
-		char *get		= (char *) malloc(BUFFERSIZE);
-		char *file_name		= (char *) malloc(BUFFERSIZE / 2);
+		
 
 		//http_ok = "HTTP/1.1 200 OK\n";
 		//http_not_found = "HTTP/1.1 404 Not Found\n";
@@ -89,16 +93,19 @@ int main(int argc, char **argv) {
 		recv(client_socket, buffer, sizeof(buffer), 0);
 	
 		sscanf(buffer, "%s %s", get, file_name);
+		
+		new_file_name = file_name + 1;
 
 		// File Descriptor for the open file
-		file_desc = open(file_name, O_RDONLY);
+		file_desc = open(new_file_name, O_RDONLY);
 
 		//printf("Value of file descriptor: %d\n", file_desc);
 
 		if (file_desc == -1) {
-			printf("File not found\n");
-			free(get);
-			free(file_name);
+			printf("File name: %s\n", file_name);
+			//free(get);
+			//free(file_name);
+			//free(new_file_name);
 			//free(http_ok);
 			//free(http_not_found);
 			puts("Sending 404");
@@ -109,7 +116,6 @@ int main(int argc, char **argv) {
 
 			// Run until the process of reading from the file and sending to the client is finished					
 			while(1) {
-				puts("Before read");
 				bytes_rd = read(file_desc, buffer, BUFFERSIZE);
 
 				// Exit if there's nothing more to read from the buffer
@@ -132,14 +138,16 @@ int main(int argc, char **argv) {
 
 			puts("Finished the while loop");
 		}
-It sits in the loop in the client but I'll fix that
-		free(get);
-		free(file_name);
-		//free(http_ok);
-		//free(http_not_found);
+
 		close(client_socket);
 		puts("Transaction finished");
 	}
+	
+	free(get);
+	free(file_name);
+	free(new_file_name);
+	//free(http_ok);
+	//free(http_not_found);
 	
 	// Close listening socket though this is just for safety measures	
 	close(lstn_scket);
