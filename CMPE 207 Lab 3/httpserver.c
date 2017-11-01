@@ -69,45 +69,38 @@ int main(int argc, char **argv) {
 		perror("Error on listen");
 		exit(EXIT_FAILURE);
 	}
-
-char *get		= (char *) malloc(BUFFERSIZE);
-		char *file_name		= (char *) malloc(BUFFERSIZE / 2);
-		// Used to ignore the slash that's present in the file name
-		char *new_file_name	= (char *) malloc(BUFFERSIZE / 2);
+	
+	// Used to store the GET request from the client
+	char *get		= (char *) malloc(BUFFERSIZE);
+	// Used to store the name of the file
+	char *file_name		= (char *) malloc(BUFFERSIZE / 2);
+	// Used to ignore the slash that's present in the file name
+	char *new_file_name	= (char *) malloc(BUFFERSIZE / 2);
 
 	while(1) {
 		puts("Waiting for clients...");
 		client_socket = accept(lstn_scket, (struct sockaddr *) &remaddr, &remaddrlen);
 
-		//char *http_ok		= (char *) malloc(strlen("HTTP/1.1 200 OK\n") + 1);
-		//char *http_not_found	= (char *) malloc(strlen("HTTP/1.1 404 Not Found\n") + 1);
+		// HTTP headers for 200 and 404
 		char http_ok[]		= "HTTP/1.1 200 OK\n";
 		char http_not_found[]	= "HTTP/1.1 404 Not Found\n";
 		
-		
-
-		//http_ok = "HTTP/1.1 200 OK\n";
-		//http_not_found = "HTTP/1.1 404 Not Found\n";
-
 		// Read the request of the client and put that in the buffer
 		recv(client_socket, buffer, sizeof(buffer), 0);
-	
+		
+		// Parse the request and put the get request
+		// and file name in their respective variables
 		sscanf(buffer, "%s %s", get, file_name);
 		
+		// This will put the file name without the / onto new_file_name
 		new_file_name = file_name + 1;
 
 		// File Descriptor for the open file
 		file_desc = open(new_file_name, O_RDONLY);
 
-		//printf("Value of file descriptor: %d\n", file_desc);
-
+		// Handle 404 and 200 requests in the if else statement
 		if (file_desc == -1) {
-			printf("File name: %s\n", file_name);
-			//free(get);
-			//free(file_name);
-			//free(new_file_name);
-			//free(http_ok);
-			//free(http_not_found);
+			printf("File name: %s sent\n", file_name);
 			puts("Sending 404");
 			send(client_socket, http_not_found, strlen(http_not_found), 0);
 			continue;
@@ -120,9 +113,8 @@ char *get		= (char *) malloc(BUFFERSIZE);
 
 				// Exit if there's nothing more to read from the buffer
 				if (bytes_rd == -1) {
-					exit(EXIT_FAILURE);
-				}
-				else if (bytes_rd == 0)
+					break;
+				} else if (bytes_rd == 0)
 					break;
 			
 				// Send content over to the remote endpoint
@@ -146,8 +138,6 @@ char *get		= (char *) malloc(BUFFERSIZE);
 	free(get);
 	free(file_name);
 	free(new_file_name);
-	//free(http_ok);
-	//free(http_not_found);
 	
 	// Close listening socket though this is just for safety measures	
 	close(lstn_scket);

@@ -54,23 +54,6 @@ int main(int argc, char **argv) {
 	remaddr.sin_family = AF_INET;
 	
 	switch(argc) {
-		/*
-		case 3:
-			// IP Address in ASCII form
-			host_site = gethostbyname(argv[1]);
-	
-			// Port number to be used for connecting to the server
-			server_port = atoi(argv[2]);
-
-			// Port Number of our server
-			remaddr.sin_port = htons(server_port);
-			bcopy((char *) host_site->h_addr, (char *) &remaddr.sin_addr.s_addr, host_site->h_length);
-
-			httpreq = malloc(strlen("GET /\r\n") + 1);
-			httpreq = "GET /\r\n";
-			puts(httpreq);
-			break;
-		*/
 		case 4:
 			host_site	= gethostbyname(argv[1]);	// IP Address in ASCII form
 			server_port	= atoi(argv[2]);		// Port number to be used for connecting to the server
@@ -119,6 +102,8 @@ int main(int argc, char **argv) {
 			bytes_rcvd = recv(server_socket, buffer, BUFFERSIZE, 0);
 					
 			if (bytes_rcvd == -1) {
+				break;
+			} else if (bytes_rcvd == 0) {
 				break;
 			}
 
