@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Date: Tue, 31 Oct 2017 00:05:02 GMT
+
+<!doctype html>
+<html>
+<body>
+
+<h1>You have loaded my website.  Goodbye!</h1>
+
+</body>
+</html>

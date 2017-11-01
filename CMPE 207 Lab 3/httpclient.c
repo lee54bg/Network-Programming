@@ -131,6 +131,7 @@ int main(int argc, char **argv) {
 		
 			memset(buffer, 0, BUFFERSIZE);
 		}
+
 		printf("Total bytes received: %d\n", total_bytes_rcvd);
 
 		free(file_name);

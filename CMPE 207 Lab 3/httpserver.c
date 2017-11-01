@@ -74,13 +74,16 @@ int main(int argc, char **argv) {
 		puts("Waiting for clients...");
 		client_socket = accept(lstn_scket, (struct sockaddr *) &remaddr, &remaddrlen);
 
-		char *http_ok		= malloc(strlen("HTTP/1.1 200 OK\n") + 1);
-		char *http_not_found	= malloc(strlen("HTTP/1.1 404 Not Found\n") + 1);
-		char *get		= malloc(BUFFERSIZE);
-		char *file_name		= malloc(BUFFERSIZE / 2);
+		//char *http_ok		= (char *) malloc(strlen("HTTP/1.1 200 OK\n") + 1);
+		//char *http_not_found	= (char *) malloc(strlen("HTTP/1.1 404 Not Found\n") + 1);
+		char http_ok[]		= "HTTP/1.1 200 OK\n";
+		char http_not_found[]	= "HTTP/1.1 404 Not Found\n";
+		
+		char *get		= (char *) malloc(BUFFERSIZE);
+		char *file_name		= (char *) malloc(BUFFERSIZE / 2);
 
-		http_ok = "HTTP/1.1 200 OK\n";
-		http_not_found = "HTTP/1.1 404 Not Found\n";
+		//http_ok = "HTTP/1.1 200 OK\n";
+		//http_not_found = "HTTP/1.1 404 Not Found\n";
 
 		// Read the request of the client and put that in the buffer
 		recv(client_socket, buffer, sizeof(buffer), 0);
@@ -90,22 +93,32 @@ int main(int argc, char **argv) {
 		// File Descriptor for the open file
 		file_desc = open(file_name, O_RDONLY);
 
+		//printf("Value of file descriptor: %d\n", file_desc);
+
 		if (file_desc == -1) {
-			perror("Error with opening file: ");
+			printf("File not found\n");
+			free(get);
+			free(file_name);
+			//free(http_ok);
+			//free(http_not_found);
+			puts("Sending 404");
 			send(client_socket, http_not_found, strlen(http_not_found), 0);
+			continue;
 		} else {
 			send(client_socket, http_ok, strlen(http_ok), 0);
 
 			// Run until the process of reading from the file and sending to the client is finished					
 			while(1) {
+				puts("Before read");
 				bytes_rd = read(file_desc, buffer, BUFFERSIZE);
 
 				// Exit if there's nothing more to read from the buffer
-				if (bytes_rd == -1)
-					break;
+				if (bytes_rd == -1) {
+					exit(EXIT_FAILURE);
+				}
 				else if (bytes_rd == 0)
-					continue;
-		
+					break;
+			
 				// Send content over to the remote endpoint
 				bytes_snt = send(client_socket, buffer, bytes_rd, 0);
 			
@@ -116,13 +129,16 @@ int main(int argc, char **argv) {
 
 				memset(buffer, 0, BUFFERSIZE);
 			}
-		}
 
+			puts("Finished the while loop");
+		}
+It sits in the loop in the client but I'll fix that
 		free(get);
 		free(file_name);
-		free(http_ok);
-		free(http_not_found);
+		//free(http_ok);
+		//free(http_not_found);
 		close(client_socket);
+		puts("Transaction finished");
 	}
 	
 	// Close listening socket though this is just for safety measures	
