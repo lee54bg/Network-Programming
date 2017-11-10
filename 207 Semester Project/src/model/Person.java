@@ -13,10 +13,11 @@ public class Person implements Serializable {
 	private int chkAct;
 	private int svgAct;
 	private int socSec;
+	private int numOfTries;
+	
 	private double chkBalance;
 	private double svgsBalance;
-	private int numOfTries;
-	private int deposit, withdraw;
+	private double deposit, withdraw;
 	
 	private String firstName;
 	private String lastName;
@@ -24,6 +25,16 @@ public class Person implements Serializable {
 	private String phoneNum;
 	private String userName;
 	private String passWd;	
+	private String occupation;
+	private AgeCategory ageCategory;
+	
+	private boolean gender;
+	private boolean actDisabled;
+	
+	public Person(String userName, String passWd) {
+		this.userName	= userName;
+		this.passWd		= passWd;
+	}
 	
 	/*
 	 * Getters and Setters.  Ignore this since this is just a Data Structure that
@@ -78,14 +89,6 @@ public class Person implements Serializable {
 		this.socSec = socSec;
 	}
 
-	public int getTotalBalance() {
-		return totalBalance;
-	}
-
-	public void setTotalBalance(int totalBalance) {
-		this.totalBalance = totalBalance;
-	}
-
 	public int getNumOfTries() {
 		return numOfTries;
 	}
@@ -94,16 +97,8 @@ public class Person implements Serializable {
 		this.numOfTries = numOfTries;
 	}
 
-	public int getDeposit() {
-		return deposit;
-	}
-
 	public void setDeposit(int deposit) {
 		this.deposit = deposit;
-	}
-
-	public int getWithdraw() {
-		return withdraw;
 	}
 
 	public void setWithdraw(int withdraw) {
@@ -189,15 +184,20 @@ public class Person implements Serializable {
 	public void setActDisabled(boolean actDisabled) {
 		this.actDisabled = actDisabled;
 	}
+	
+	public double getChkBalance() {
+		return chkBalance;
+	}
 
-	private String occupation;
-	private AgeCategory ageCategory;
-	
-	private boolean gender;
-	private boolean actDisabled;
-	
-	public Person(String userName, String passWd) {
-		this.userName	= userName;
-		this.passWd		= passWd;
+	public void setChkBalance(double chkBalance) {
+		this.chkBalance = chkBalance;
+	}
+
+	public double getSvgsBalance() {
+		return svgsBalance;
+	}
+
+	public void setSvgsBalance(double svgsBalance) {
+		this.svgsBalance = svgsBalance;
 	}
 }

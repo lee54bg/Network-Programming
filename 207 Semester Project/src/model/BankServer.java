@@ -1,3 +1,4 @@
+package model;
 /*
  * Author: Brandon Lee Gaerlan
  * Program: Create a program that connects a SlaveBot to a MasterBot
@@ -109,8 +110,6 @@ public class BankServer extends Thread {
 	private void login(Socket client) {
 		DataInputStream in;
 		DataOutputStream out;
-		ObjectOutputStream	outObj;
-		ObjectInputStream	inObj;
 		
 		String username;
 		String password;
@@ -121,7 +120,8 @@ public class BankServer extends Thread {
 		Person tatsuya = new Person("tatsu01", "kenshin");
 		tatsuya.setAge(21);
 		tatsuya.setEmail("tatsuya@yahoo.com");
-		tatsuya.setTotalBalance(500);
+		tatsuya.setChkBalance(500.00);
+		tatsuya.setSvgsBalance(1000.00);
 		
 		try {
 			in			= new DataInputStream(client.getInputStream());
@@ -130,12 +130,9 @@ public class BankServer extends Thread {
 			
 			out			= new DataOutputStream(client.getOutputStream());
 			
-			if(username.equals("one") && password.equals("two")) {
+			if(username.equals("one") && password.equals("two"))
 				out.writeBoolean(true);
-				
-				outObj = new ObjectOutputStream(client.getOutputStream());
-				outObj.writeObject(tatsuya);
-			} else
+			else
 				out.writeBoolean(false);
 				
 		} catch (Exception e) {

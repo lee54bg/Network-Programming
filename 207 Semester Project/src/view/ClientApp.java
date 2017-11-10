@@ -1,3 +1,4 @@
+package view;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -32,9 +33,16 @@ public class ClientApp {
 	 * @param person 
 	 */
 	public ClientApp(Socket client, Person person) {
-		frame = new JFrame("Client");
+		frame		= new JFrame("Client");
 		this.client = client;
 		this.person = person;
+		
+		initialize();
+	}
+
+	public ClientApp(Socket client) {
+		frame		= new JFrame("Client");
+		this.client	= client;
 		
 		initialize();
 	}
