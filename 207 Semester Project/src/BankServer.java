@@ -6,19 +6,14 @@
  * */
 
 
-import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 
 public class BankServer extends Thread {
 	
@@ -42,34 +37,14 @@ public class BankServer extends Thread {
 	public static void main(String args[]) {
 		
 		try {
-			int portNum;
-			String cmdPrmpt = null;
-			Scanner in = new Scanner(System.in);
-			String[] cmdArgs;
+			BankServer master = new BankServer(3000);
+			master.start();
 			
-			if(args.length != 2) {
+			while(true) {
 				
-				System.out.println(">Terminating.  Not enough arguments");
-				System.exit(0);
-				
-			} else {
-				
-				portNum = Integer.parseInt(args[1]);
-				
-				System.out.println("Initiating Server");
-				
-				BankServer master = new BankServer(portNum);
-				master.start();
-				
-				// Execute arguments in the CLI
-				while(true) {
-					
-				} // End of while loop
-				
-				
-			}
+			} // End of while loop
 			
-			in.close();
+			
 		} catch(Exception e) {
 			System.out.println(e.toString());
 		}
@@ -90,65 +65,6 @@ public class BankServer extends Thread {
 		return dates;
 	}	
 
-	/*
-	 * Connect, Disconnect, and List methods
-	 *
-	 */
-	
-	public void connect(String cmdPrmpt) {
-		try {
-			String[] cmdArgs = cmdPrmpt.split(" ");
-			
-			ArrayList<Socket> sockets = (ArrayList<Socket>) getclntSckts();
-			PrintWriter output;
-			
-			if(cmdArgs[1].equals("all")) {
-				for(Socket socket : sockets) {
-					output	= new PrintWriter(socket.getOutputStream(), true);
-					output.println(cmdPrmpt);
-					break;
-				}
-			} else if(checkIP(cmdArgs[1])) {
-				String toCompare = "/" + cmdArgs[1];
-				
-				for(Socket socket : sockets) {
-					if(socket.getInetAddress().toString().equals(toCompare)) {
-						output	= new PrintWriter(socket.getOutputStream(), true);
-						output.println(cmdPrmpt);
-						break;
-					}
-				}
-			} else {
-				for(Socket socket : sockets) {
-					if(socket.getInetAddress().getHostName().toString().equals(cmdArgs[1])) {
-						output	= new PrintWriter(socket.getOutputStream(), true);
-						output.println(cmdPrmpt);
-						break;
-					}
-				}
-			}			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	
-	public void list() {
-		//Initialize iterator
-		Iterator<LocalDate> dateIterator = dates.iterator();
-		
-		//Iterate through each slave and display the following information
-		for(Socket slave : clntSckts)
-			//Print out the list of slaves along with their IP address and their socket information
-			System.out.println(
-				slave.getInetAddress().getHostName() + "\t"
-				+ slave.getRemoteSocketAddress() + "\t"
-				+ slave.getPort() + "\t"
-				+ dateIterator.next()
-			);
-	} // End of list method
-	
 	// Checks and validates IP address
 	private static boolean checkIP(String ipAddr) {
 
@@ -166,9 +82,11 @@ public class BankServer extends Thread {
 		return true;
 	} // End of checkIP method
 
-	// Multithreaded server to accept clients (SlaveBots)
+	
+	
+	// Multithreaded server to accept clients
 	public void run() {
-		// Gets a reference to the ServerSocket initialized in the main object (MasterBot)
+		// Gets a reference to the ServerSocket initialized in the main object
 		ServerSocket serverSocket = getSvrScket();
 		
 		while(true) {
@@ -176,10 +94,29 @@ public class BankServer extends Thread {
 				clients = serverSocket.accept();
 				clntSckts.add(clients);
 				dates.add(LocalDate.now());
+				
+				login(clients);
+				// testing purposes
+				System.out.println("A client has connected");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}		
 	} // End of run method
+
+	private void login(Socket client) {
+		DataInputStream in;
+		String username;
+		String password;
+		
+		try {
+			in = new DataInputStream(client.getInputStream());
+			username = in.readUTF();
+			password = in.readUTF();
+			System.out.println(username + " " + password);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
-} // End of MasterBot class
+} // End of BankServer class

@@ -2,8 +2,11 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,7 +20,7 @@ public class LoginForm {
 	private JTextField textField;
 	private JTextField textField_1;
 	private String userName;
-	private String passWd;
+	private String passWord;
 
 	/**
 	 * Launch the application.
@@ -83,21 +86,36 @@ public class LoginForm {
 		lblWelcomeToBank.setBounds(101, 16, 180, 43);
 		frmLogin.getContentPane().add(lblWelcomeToBank);
 		
+		// This works
 		btnLogin.addActionListener(new ActionListener() {
+			Socket client = null;
+			DataOutputStream out;
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String username = textField.getText();
-				String password = textField_1.getText();
+				userName = textField.getText();
+				passWord = textField_1.getText();
 				
-				if(username.equals("") && password.equals("")) {
-					Socket client = new Socket(InetAddress.getByAddress(addr), 3000);
+				if(userName.equals("one") && passWord.equals("two")) {
+					
+					try {
+						client = new Socket(InetAddress.getByName("localhost"), 3000);
+						out = new DataOutputStream(client.getOutputStream());
+						out.writeUTF(userName);
+						out.writeUTF(passWord);
+						out.flush();
+						
+						ClientApp clientApp = new ClientApp();
+						
+						frmLogin.dispose();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 				}
 				else {
 					JOptionPane.showMessageDialog(null, "Invalid credentials.  Please try again");
 				}
 			}
-		});
+		});	// End of btnLogin
 	}
-	
-	
 }

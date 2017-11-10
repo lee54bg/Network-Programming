@@ -11,41 +11,33 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ClientApp {
+	JFrame frame;
 
-	private JFrame frame;
+	public JFrame getFrame() {
+		return frame;
+	}
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					ClientApp window = new ClientApp();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+	public void setFrame(JFrame frame) {
+		this.frame = frame;
 	}
 
 	/**
 	 * Create the application.
 	 */
 	public ClientApp() {
+		frame = new JFrame("Client");
 		initialize();
 	}
 
 	/**
-	 * Initialize the contents of the frame.
+	 * Initialize the contents of the 
 	 */
 	private void initialize() {
-		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(460, 414);
 		frame.getContentPane().setLayout(null);
+		frame.setVisible(true);
 		
 		JButton btnWithdraw = new JButton("Withdraw");
 		btnWithdraw.setBounds(76, 132, 97, 25);
@@ -85,6 +77,13 @@ public class ClientApp {
 			public void actionPerformed(ActionEvent arg0) {
 				String deposit = JOptionPane.showInputDialog(frame, "Deposit how much?");
 				double depositValue = Double.parseDouble(deposit);
+			}
+		});
+		
+		btnExit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new LoginForm();
 			}
 		});
 	}
