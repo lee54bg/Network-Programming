@@ -9,11 +9,15 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import model.Person;
 
 public class BankServer extends Thread {
 	
@@ -21,7 +25,7 @@ public class BankServer extends Thread {
 	private ServerSocket serverSocket;
 	private Socket clients;
 	
-	// Slave sockets and their associated dates
+	// Connections
 	private List<Socket> clntSckts = new ArrayList<Socket>();
 	private List<String> ipAdds = new ArrayList<>();
 	private List<LocalDate> dates = new ArrayList<LocalDate>();
@@ -81,8 +85,6 @@ public class BankServer extends Thread {
 
 		return true;
 	} // End of checkIP method
-
-	
 	
 	// Multithreaded server to accept clients
 	public void run() {
@@ -106,14 +108,36 @@ public class BankServer extends Thread {
 
 	private void login(Socket client) {
 		DataInputStream in;
+		DataOutputStream out;
+		ObjectOutputStream	outObj;
+		ObjectInputStream	inObj;
+		
 		String username;
 		String password;
 		
+		/*
+		 * Person Initialized and hardcoded for debugging purposes
+		 */
+		Person tatsuya = new Person("tatsu01", "kenshin");
+		tatsuya.setAge(21);
+		tatsuya.setEmail("tatsuya@yahoo.com");
+		tatsuya.setTotalBalance(500);
+		
 		try {
-			in = new DataInputStream(client.getInputStream());
-			username = in.readUTF();
-			password = in.readUTF();
-			System.out.println(username + " " + password);
+			in			= new DataInputStream(client.getInputStream());
+			username	= in.readUTF();
+			password	= in.readUTF();
+			
+			out			= new DataOutputStream(client.getOutputStream());
+			
+			if(username.equals("one") && password.equals("two")) {
+				out.writeBoolean(true);
+				
+				outObj = new ObjectOutputStream(client.getOutputStream());
+				outObj.writeObject(tatsuya);
+			} else
+				out.writeBoolean(false);
+				
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

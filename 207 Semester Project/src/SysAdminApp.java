@@ -50,7 +50,7 @@ public class SysAdminApp {
 			public void run() {
 				try {
 					SysAdminApp window = new SysAdminApp();
-					window.frmSystemAdmin.setVisible(true);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -72,6 +72,7 @@ public class SysAdminApp {
 		frmSystemAdmin = new JFrame();
 		frmSystemAdmin.setTitle("System Admin");
 		frmSystemAdmin.setBounds(100, 100, 400, 470);
+		frmSystemAdmin.setVisible(true);
 		frmSystemAdmin.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JTabbedPane tabbedPane = new JTabbedPane();

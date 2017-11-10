@@ -6,12 +6,18 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import model.Person;
+
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.Socket;
 
 public class ClientApp {
 	JFrame frame;
+	Socket client;
+	Person person;
 
 	public JFrame getFrame() {
 		return frame;
@@ -23,9 +29,13 @@ public class ClientApp {
 
 	/**
 	 * Create the application.
+	 * @param person 
 	 */
-	public ClientApp() {
+	public ClientApp(Socket client, Person person) {
 		frame = new JFrame("Client");
+		this.client = client;
+		this.person = person;
+		
 		initialize();
 	}
 
@@ -83,7 +93,14 @@ public class ClientApp {
 		btnExit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new LoginForm();
+				frame.dispose();
+				LoginForm window = new LoginForm();
+				
+				try {
+					client.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 	}
