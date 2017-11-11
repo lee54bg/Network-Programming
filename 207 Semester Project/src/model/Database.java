@@ -36,7 +36,7 @@ public class Database {
 			preparedStmt.setString	(3, person.getEmail() );
 			preparedStmt.setInt		(4, person.getSocSec() );
 			preparedStmt.setString	(5, person.getPhoneNum() );
-			preparedStmt.setInt		(6, 5000);
+			preparedStmt.setInt		(6, person.getPinNum());
 			preparedStmt.setString	(7, person.getAddress());
 			preparedStmt.setString	(8, person.getCity());
 			preparedStmt.setString	(9, person.getState());
@@ -55,25 +55,28 @@ public class Database {
 		
 	}
 	
-	public void connect() throws Exception {
+	public void connect() {
 		if (connection != null)
 			return;
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
+			
+			String url = "jdbc:mysql://localhost:3306/atb_bank";
+			String username = "testadmin";
+			String pwd = "root";
+			
+			connection = DriverManager.getConnection(url, username, pwd);
+			 
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-
-		String url = "jdbc:mysql://localhost:3306/atb_bank";
-		String username = "testadmin";
-		String pwd = "root";
-		
-		connection = DriverManager.getConnection(url, username, pwd);
 	}
 	
-	public void load() throws SQLException {
+	/*public void load() throws SQLException {
 		people.clear();
-	}
+	}*/
 	
 	// Disconnect the SQL table
 	public void disconnect() {

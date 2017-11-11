@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Random;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -92,6 +93,10 @@ public class FormPanel extends JPanel {
 			okBtn[i] = new JButton(btns[i]);
 			gc.gridx = i;
 			gc.gridy = 13;
+			if( i == 0 )
+				gc.anchor = GridBagConstraints.LINE_END;
+			else
+				gc.anchor = GridBagConstraints.LINE_START;
 			add(okBtn[i], gc);
 		}
 		
@@ -129,8 +134,12 @@ public class FormPanel extends JPanel {
 					p.setAddress(getAddress());
 					p.setCity(getCity());
 					p.setState(getState());
+					p.setChkAct(genAcctNum());
+					p.setSvgAct(genAcctNum());
 					
+					db.connect();
 					db.addPers(p);
+					db.disconnect();
 				}
 			}
 		});
@@ -145,7 +154,42 @@ public class FormPanel extends JPanel {
 		}); // End of cancel button		
 		
 	} // End of Constructor
+	
+	/*
+	 * Valiidate Sign Up once fields
+	 * have been fully filled
+	 */
+	public void validateSignUp() {
+		// Number of valid fields need to be match
+		int numOfVldFlds = 0;
 		
+		// SSN
+		if( isANum(txtFlds[3].getText()) ) {
+			numOfVldFlds++;
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid SSN");
+		
+		// PIN number
+		if( isANum(txtFlds[6].getText()) )
+			numOfVldFlds++;
+		else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid PIN");
+		
+		// Email
+		if( txtFlds[4].getText().contains("@yahoo.com") | 
+				txtFlds[4].getText().contains("@gmail.com") )
+			numOfVldFlds++;
+		else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid email");
+		
+		// PIN number
+		if( txtFlds[12].getText().length() >= 8 )
+			numOfVldFlds++;
+		else
+			JOptionPane.showMessageDialog(frames, "Please enter a password that\nhas "
+					+ "minimum of 8 characters");
+	}
+	
 	/*
 	 * Methods to acquire proper data from the
 	 * Textfields
@@ -187,21 +231,36 @@ public class FormPanel extends JPanel {
 	}
 	
 	public String getUserName() {
-		return txtFlds[10].getText();
+		return txtFlds[11].getText();
 	}
 	
 	public String getPassWd() {
-		return txtFlds[11].getText();
+		return txtFlds[12].getText();
 	}
 	
 	/*
 	 * Check to see if this is a string
 	 * Returns True: if this is a number
 	 * False: if this isn't
-	 * 
 	 */
 	public boolean isANum(String s) {  
 	    return s != null && s.matches("[-+]?\\d*\\.?\\d+");
+	}
+	
+	/*
+	 * Generate Account Numbers for both Checking and Savings
+	 */
+	public int genAcctNum() {
+		Random rand = new Random();
+		int accountNum,
+			length = 0;
+		
+		do {
+			accountNum = 100000000 + rand.nextInt(900000000);
+			
+		} while( (length = String.valueOf(accountNum).length()) != 9);
+		
+		return accountNum;
 	}
 	
 	/*

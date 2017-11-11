@@ -17,7 +17,6 @@ public class Person implements Serializable {
 	
 	private double chkBalance;
 	private double svgsBalance;
-	private double deposit, withdraw;
 	
 	private String firstName;
 	private String lastName;
@@ -100,15 +99,7 @@ public class Person implements Serializable {
 	public void setNumOfTries(int numOfTries) {
 		this.numOfTries = numOfTries;
 	}
-
-	public void setDeposit(int deposit) {
-		this.deposit = deposit;
-	}
-
-	public void setWithdraw(int withdraw) {
-		this.withdraw = withdraw;
-	}
-
+	
 	public String getFirstName() {
 		return firstName;
 	}
