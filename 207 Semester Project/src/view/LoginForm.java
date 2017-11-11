@@ -1,6 +1,7 @@
 package view;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
@@ -20,7 +21,6 @@ import javax.swing.JTextField;
 import model.Person;
 
 public class LoginForm {
-
 	private JFrame frmLogin;
 	private JTextField textField;
 	private JTextField textField_1;
@@ -34,21 +34,6 @@ public class LoginForm {
 	private String userName;
 	private String passWord;
 	
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					LoginForm window = new LoginForm();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
 	/**
 	 * Create the application.
 	 */
@@ -65,11 +50,11 @@ public class LoginForm {
 		frmLogin.getContentPane().setLayout(null);
 		
 		btnLogin = new JButton("Login");
-		btnLogin.setBounds(12, 173, 97, 25);
+		btnLogin.setBounds(26, 174, 97, 25);
 		frmLogin.getContentPane().add(btnLogin);
 		
 		btnCancel = new JButton("Cancel");
-		btnCancel.setBounds(121, 173, 97, 25);
+		btnCancel.setBounds(135, 174, 97, 25);
 		frmLogin.getContentPane().add(btnCancel);
 		
 		lblUsername = new JLabel("Username:");
@@ -91,12 +76,12 @@ public class LoginForm {
 		textField_1.setColumns(10);
 		
 		lblWelcomeToBank = new JLabel("Welcome to ABT Bank");
-		lblWelcomeToBank.setFont(new Font("Tahoma", Font.PLAIN, 17));
-		lblWelcomeToBank.setBounds(101, 16, 180, 43);
+		lblWelcomeToBank.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		lblWelcomeToBank.setBounds(48, 13, 226, 43);
 		frmLogin.getContentPane().add(lblWelcomeToBank);
 		
 		btnSignUp = new JButton("Sign Up");
-		btnSignUp.setBounds(230, 173, 97, 25);
+		btnSignUp.setBounds(244, 174, 97, 25);
 		frmLogin.getContentPane().add(btnSignUp);
 		
 		initialize();
@@ -164,7 +149,12 @@ public class LoginForm {
 			}
 		});	// End of btnLogin
 		
-		
+		btnCancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				frmLogin.dispose();
+			}
+		});
 	} // End of initialize method
 	
 	public String getUserName() {

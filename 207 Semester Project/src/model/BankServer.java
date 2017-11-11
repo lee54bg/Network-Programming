@@ -21,6 +21,7 @@ import java.util.List;
 import model.Person;
 
 public class BankServer extends Thread {
+	Database db = new Database();
 	
 	// Initialize a single ServerSocket
 	private ServerSocket serverSocket;
@@ -55,6 +56,7 @@ public class BankServer extends Thread {
 		}
 		
 		System.exit(0);
+		
 	} // End of Main
 	
 	// Getters and Setters

@@ -13,13 +13,14 @@ public class SignUp extends JFrame {
 	
 	public SignUp() {
 		super("Hello World");
-		setSize(400, 750);
+		setSize(400, 800);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());
 		setResizable(false);
 		setVisible(true);
 		
 		formPanel = new FormPanel();
-		getContentPane().add(formPanel, BorderLayout.CENTER);
+		formPanel.setFrames(this);
+		add(formPanel, BorderLayout.CENTER);
 	}
 }

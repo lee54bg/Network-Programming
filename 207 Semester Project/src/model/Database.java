@@ -1,10 +1,13 @@
 package model;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class Database {
 	private ArrayList<Person> people;
@@ -15,7 +18,33 @@ public class Database {
 	}
 	
 	public void addPers(Person person) {
-		people.add(person);
+		// create a sql date object so we can use it in our INSERT statement
+		Calendar calendar = Calendar.getInstance();
+		Date startDate = new Date(calendar.getTime().getTime());
+
+		//the mysql insert statement
+	    String query = "INSERT INTO clients (FirstName, LastName, Email,"
+	    		+ " SocialSecurity, PhoneNumber, PIN, Address, City, State)"
+	    		+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		
+		PreparedStatement preparedStmt;
+		
+		try {
+			preparedStmt = connection.prepareStatement(query);
+			preparedStmt.setString	(1, person.getFirstName() );
+			preparedStmt.setString	(2, person.getLastName() );
+			preparedStmt.setString	(3, person.getEmail() );
+			preparedStmt.setInt		(4, person.getSocSec() );
+			preparedStmt.setString	(5, person.getPhoneNum() );
+			preparedStmt.setInt		(6, 5000);
+			preparedStmt.setString	(7, person.getAddress());
+			preparedStmt.setString	(8, person.getCity());
+			preparedStmt.setString	(9, person.getState());
+			
+			preparedStmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public ArrayList<Person> getDB() {
@@ -27,7 +56,6 @@ public class Database {
 	}
 	
 	public void connect() throws Exception {
-
 		if (connection != null)
 			return;
 		try {
@@ -45,11 +73,6 @@ public class Database {
 	
 	public void load() throws SQLException {
 		people.clear();
-		
-		/*String 
-		
-		Statement selectStatement = connection.createStatement();
-		selectStatement.executeQuery("");*/
 	}
 	
 	// Disconnect the SQL table
