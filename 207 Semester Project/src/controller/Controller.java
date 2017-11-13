@@ -7,12 +7,14 @@ import model.Database;
 import view.ClientApp;
 import view.LoginForm;
 import view.SysAdminApp;
+import view.AcctView;
 
 public class Controller {
 	Database db;
 	
 	// These are our views
 	LoginForm	login;
+	AcctView	acctView;
 	ClientApp	client;
 	SysAdminApp	sysAdmin;
 	
@@ -26,6 +28,10 @@ public class Controller {
 	
 	public Controller(SysAdminApp sysAdmin) {
 		this.sysAdmin = sysAdmin;
+	}
+	
+	public Controller(AcctView	acctView) {
+		this.acctView = acctView;
 	}
 	
 	class CalculateListener implements ActionListener {

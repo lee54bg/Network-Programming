@@ -12,7 +12,7 @@ public class SignUp extends JFrame {
 	private FormPanel formPanel;
 	
 	public SignUp() {
-		super("Hello World");
+		super("Sign Up Form");
 		setSize(400, 800);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());

@@ -5,6 +5,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Random;
 
 import javax.swing.BorderFactory;
@@ -104,43 +109,47 @@ public class FormPanel extends JPanel {
 		okBtn[0].addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				int i;
+//				int i;
+//				
+//				for(i = 0; i < labels.length; i++) {
+//					if( (i == 2) || (i == 10) )
+//						continue;
+//					else
+//						if(txtFlds[i].getText().equals("")) {
+//							JOptionPane.showMessageDialog(frames, "Please fill out the form");
+//							break;
+//						}
+//					
+//					if(i == 9)
+//						break;
+//				} // End of for loop
+				validateSignUp();
 				
-				for(i = 0; i < labels.length; i++) {
-					if( (i == 2) || (i == 10) )
-						continue;
-					else
-						if(txtFlds[i].getText().equals("")) {
-							JOptionPane.showMessageDialog(frames, "Please fill out the form");
-							break;
-						}
-					
-					if(i == 9)
-						break;
-				} // End of for loop
-				
-				if( !isANum(txtFlds[3].getText()) )
-					JOptionPane.showMessageDialog(frames, "Please enter a valid SSN");
-				else if( !isANum(txtFlds[6].getText()) )
-					JOptionPane.showMessageDialog(frames, "Please enter a valid PIN");
-				else {
-					Person p = new Person(getUserName(), getPassWd());
-					p.setFirstName(getFirstName());
-					p.setLastName(getLastName());
-					p.setSocSec(getSSN());
-					p.setEmail(getEmail());
-					p.setPhoneNum(getPhoneNum());
-					p.setPinNum(getPIN());
-					p.setAddress(getAddress());
-					p.setCity(getCity());
-					p.setState(getState());
-					p.setChkAct(genAcctNum());
-					p.setSvgAct(genAcctNum());
-					
-					db.connect();
-					db.addPers(p);
-					db.disconnect();
-				}
+//				if( !isANum(txtFlds[3].getText()) )
+//					JOptionPane.showMessageDialog(frames, "Please enter a valid SSN");
+//				else if( !isANum(txtFlds[6].getText()) )
+//					JOptionPane.showMessageDialog(frames, "Please enter a valid PIN");
+//				else if(db.searchForUser(txtFlds[11].getText()))
+//					JOptionPane.showMessageDialog(frames, "Username already exists.\n"
+//													+ "Please try another Username.");
+//				else {
+//					Person p = new Person(getUserName(), getPassWd());
+//					p.setFirstName(getFirstName());
+//					p.setLastName(getLastName());
+//					p.setSocSec(getSSN());
+//					p.setEmail(getEmail());
+//					p.setPhoneNum(getPhoneNum());
+//					p.setPinNum(getPIN());
+//					p.setAddress(getAddress());
+//					p.setCity(getCity());
+//					p.setState(getState());
+//					p.setChkAct(genAcctNum());
+//					p.setSvgAct(genAcctNum());
+//					
+//					db.connect();
+//					db.addPers(p);
+//					db.disconnect();
+//				}
 			}
 		});
 		
@@ -163,31 +172,94 @@ public class FormPanel extends JPanel {
 		// Number of valid fields need to be match
 		int numOfVldFlds = 0;
 		
+		// First Name
+		if( !txtFlds[0].getText().equals("")) {
+			numOfVldFlds++;
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid First Name");
+		// Last Name
+		if( !txtFlds[1].getText().equals("")) {
+			numOfVldFlds++;
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid Last Name");
 		// SSN
 		if( isANum(txtFlds[3].getText()) ) {
 			numOfVldFlds++;
 		} else
 			JOptionPane.showMessageDialog(frames, "Please enter a valid SSN");
-		
+		// Email
+		if( txtFlds[4].getText().contains("@"))
+			numOfVldFlds++;
+		else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid email");
+		// Phone Number
+		if( !txtFlds[5].getText().equals("")) {
+			numOfVldFlds++;
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid Phone Number");
 		// PIN number
 		if( isANum(txtFlds[6].getText()) )
 			numOfVldFlds++;
 		else
 			JOptionPane.showMessageDialog(frames, "Please enter a valid PIN");
-		
-		// Email
-		if( txtFlds[4].getText().contains("@yahoo.com") | 
-				txtFlds[4].getText().contains("@gmail.com") )
+		// Address
+		if( !txtFlds[7].getText().equals("")) {
 			numOfVldFlds++;
-		else
-			JOptionPane.showMessageDialog(frames, "Please enter a valid email");
-		
-		// PIN number
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid address");
+		// City
+		if( !txtFlds[8].getText().equals("")) {
+			numOfVldFlds++;
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid city");
+		// State
+		if( !txtFlds[9].getText().equals("")) {
+			numOfVldFlds++;
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid state");
+		// Username
+		if( !txtFlds[11].getText().equals("")) {
+			numOfVldFlds++;
+		} else
+			JOptionPane.showMessageDialog(frames, "Please enter a valid username");
+		// Password
 		if( txtFlds[12].getText().length() >= 8 )
 			numOfVldFlds++;
 		else
 			JOptionPane.showMessageDialog(frames, "Please enter a password that\nhas "
 					+ "minimum of 8 characters");
+		
+		// final check to create new account
+		if( numOfVldFlds == 11) {
+			Person p = new Person(getUserName(), getPassWd());
+			p.setFirstName(getFirstName());
+			p.setLastName(getLastName());
+			p.setSocSec(getSSN());
+			p.setEmail(getEmail());
+			p.setPhoneNum(getPhoneNum());
+			p.setPinNum(getPIN());
+			p.setAddress(getAddress());
+			p.setCity(getCity());
+			p.setState(getState());
+			p.setChkAct(genAcctNum());
+			p.setSvgAct(genAcctNum());
+			
+			db.connect();
+			if(db.searchForUser(txtFlds[11].getText())) {
+				JOptionPane.showMessageDialog(frames, "Username already exists.\n"
+												+ "Please try another Username.");
+			}
+			else {
+				db.addPers(p);
+				db.disconnect();
+				JOptionPane.showMessageDialog(frames, "You have created an account successfully!\n");
+				LoginForm window = new LoginForm();
+				frames.dispose();
+				
+			}
+		}
+
+		
 	}
 	
 	/*

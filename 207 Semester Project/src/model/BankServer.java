@@ -17,6 +17,14 @@ import java.net.Socket;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Connection;
+
+
 
 import model.Person;
 
@@ -31,6 +39,11 @@ public class BankServer extends Thread {
 	private List<Socket> clntSckts = new ArrayList<Socket>();
 	private List<String> ipAdds = new ArrayList<>();
 	private List<LocalDate> dates = new ArrayList<LocalDate>();
+	
+	//Connection to DB 
+	Connection conn = null;
+	PreparedStatement statement = null;
+
 	
 	//Constructor
 	public BankServer(int hostPortNum) throws IOException {
@@ -130,15 +143,69 @@ public class BankServer extends Thread {
 			username	= in.readUTF();
 			password	= in.readUTF();
 			
-			out			= new DataOutputStream(client.getOutputStream());
+			//Above gives username and passwd from form, now query database and get all info and pass to next screen
 			
-			if(username.equals("one") && password.equals("two"))
-				out.writeBoolean(true);
-			else
-				out.writeBoolean(false);
+//			String query = "SELECT * FROM clients WHERE UserName='" + username + "' AND Password='" + password + "'";
+					    
+			//Connect
+			Class.forName("com.mysql.jdbc.Driver");
+			
+			String url = "jdbc:mysql://localhost:3306/atb_bank";
+			String dbusername = "testadmin";
+			String dbpwd = "root";
+			
+			conn = DriverManager.getConnection(url, dbusername, dbpwd);
+			
+			String query = "SELECT * FROM clients WHERE UserName = ? AND Password = ?";
+			
+			statement = conn.prepareStatement(query);
+
+		    statement.setString(1, username);
+		    statement.setString(2, password);
+
+		    ResultSet rs = statement.executeQuery();
+		    
+			out			= new DataOutputStream(client.getOutputStream());
+
+		    
+		    if(rs.next()) {
+		    	out.writeBoolean(true);
+		    } else {
+		    	out.writeBoolean(false);
+		    }
+			
+
+		//	out			= new DataOutputStream(client.getOutputStream());
+
+			
+			// if(username.equals("one") && password.equals("two"))
+				// out.writeBoolean(true);
+			// else
+				// out.writeBoolean(false);
+		    
 				
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+
+		      try {
+
+		         if(statement != null)
+		            statement.close();
+
+		      } catch (SQLException ex) {
+		           ex.printStackTrace();
+		      }
+
+		      try {
+
+		         if(conn != null)
+		            conn.close();
+
+		      } catch (SQLException ex) {
+		           ex.printStackTrace();
+		      }
 		}
 	}
 	

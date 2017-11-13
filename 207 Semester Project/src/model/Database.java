@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import javax.swing.JOptionPane;
 
 public class Database {
 	private ArrayList<Person> people;
@@ -24,8 +27,9 @@ public class Database {
 
 		//the mysql insert statement
 	    String query = "INSERT INTO clients (FirstName, LastName, Email,"
-	    		+ " SocialSecurity, PhoneNumber, PIN, Address, City, State)"
-	    		+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	    		+ " SocialSecurity, PhoneNumber, PIN, Address, City, State,"
+	    		+ " UserName, Password, SvgAct, SvgActBal, ChkAct, ChkActBal)"
+	    		+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		PreparedStatement preparedStmt;
 		
@@ -40,6 +44,12 @@ public class Database {
 			preparedStmt.setString	(7, person.getAddress());
 			preparedStmt.setString	(8, person.getCity());
 			preparedStmt.setString	(9, person.getState());
+			preparedStmt.setString	(10, person.getUserName());
+			preparedStmt.setString	(11, person.getPassWd());
+			preparedStmt.setInt		(12, person.getSvgAct());
+			preparedStmt.setInt		(13, 0);
+			preparedStmt.setInt		(14, person.getChkAct());
+			preparedStmt.setInt		(15, 0);
 			
 			preparedStmt.execute();
 		} catch (SQLException e) {
@@ -51,8 +61,35 @@ public class Database {
 		return people;
 	}
 	
-	public void searchForUser() {
+	public boolean searchForUser(String testname) {
+		ResultSet rs = null;
+		boolean result = false;
 		
+		String query = "SELECT * FROM clients WHERE UserName = ?";
+		
+		PreparedStatement statement;
+		
+		//Connect
+		try {			
+			statement = connection.prepareStatement(query);
+
+		    statement.setString(1, testname);
+
+		    rs = statement.executeQuery();
+		    
+		    if(rs.next()) {
+				// username exists
+				result = true;
+			} else {
+				// otherwise username does not exist
+				result =  false;
+			}
+    
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
 	
 	public void connect() {

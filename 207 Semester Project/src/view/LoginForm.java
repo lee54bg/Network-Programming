@@ -121,8 +121,11 @@ public class LoginForm {
 					out.writeUTF(passWord);
 					out.flush();
 					
+				
 					// Your receiving that verification back
 					in	= new DataInputStream(client.getInputStream());
+					
+
 					
 					confirmed = in.readBoolean();
 					
@@ -130,9 +133,12 @@ public class LoginForm {
 						out.close();
 						in.close();
 						
-						JOptionPane.showMessageDialog(frmLogin, "Welcome back!");
+						JOptionPane.showMessageDialog(frmLogin, "Welcome back " + userName + "!");
 						
-						ClientApp clientApp = new ClientApp(client);
+//						ClientApp clientApp = new ClientApp(client, userName);
+						//Go to account view, send parameters of socket and username
+						AcctView acctview = new AcctView(client, userName);
+
 						
 						/*
 						 * This just means that I'm going to delete the current
