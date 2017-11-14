@@ -26,7 +26,7 @@ import javax.swing.JTextField;
 
 import model.Person;
 
-public class LoginFormView {
+public class ClientLoginView {
 	private JFrame frmLogin;
 	private JTextField textField;
 	private JTextField textField_1;
@@ -50,7 +50,7 @@ public class LoginFormView {
 	private DataInputStream in;
 	
 	// Different parameters
-	public LoginFormView(String ipAddress, int portNum) {
+	public ClientLoginView(String ipAddress, int portNum) {
 		this.ipAddress = ipAddress;
 		this.portNum = portNum;
 		
@@ -61,7 +61,7 @@ public class LoginFormView {
 	/*
 	 * Default Constructor
 	 */
-	public LoginFormView() {
+	public ClientLoginView() {
 		this.ipAddress = "127.0.0.1";
 		this.portNum = 3000;
 		
@@ -107,8 +107,8 @@ public class LoginFormView {
 		frmLogin.getContentPane().add(textField_1);
 		textField_1.setColumns(10);
 		
-		lblWelcomeToBank = new JLabel("Welcome to ABT Bank");
-		lblWelcomeToBank.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		lblWelcomeToBank = new JLabel("Welcome to ABT Bank!");
+		lblWelcomeToBank.setFont(new Font("SimSun", Font.PLAIN, 21));
 		lblWelcomeToBank.setBounds(48, 13, 226, 43);
 		frmLogin.getContentPane().add(lblWelcomeToBank);
 		
@@ -143,38 +143,48 @@ public class LoginFormView {
 				userName = getUserName();
 				passWord = getPassWd();
 				
-				try {
-					// Your sending the username and password to the server for verification
-					client	= new Socket(ipAddress, portNum);
-					out		= new DataOutputStream(client.getOutputStream());
-					out.writeUTF(userName);
-					out.writeUTF(passWord);
-					out.flush();
-									
-					// Your receiving that verification back
-					in	= new DataInputStream(client.getInputStream());
+				//Check if login fields are empty instead of always trying to connect to DB
+				if (userName.isEmpty() || passWord.isEmpty()) {
+					JOptionPane.showMessageDialog(frmLogin, "No username or password was entered."
+							+ " Please try again!", "Error!", JOptionPane.INFORMATION_MESSAGE);
+				}
+				
+				else {
+					try {
+						// Your sending the username and password to the server for verification
+						client	= new Socket(ipAddress, portNum);
+						out		= new DataOutputStream(client.getOutputStream());
+						out.writeUTF(userName);
+						out.writeUTF(passWord);
+						out.flush();
 										
-					confirmed = in.readBoolean();
-					
-					if(confirmed == true) {
-						out.close();
-						in.close();
+						// Your receiving that verification back
+						in	= new DataInputStream(client.getInputStream());
+											
+						confirmed = in.readBoolean();
 						
-						JOptionPane.showMessageDialog(frmLogin, "Welcome back " + userName + "!");
-						
-						AcctView acctview = new AcctView(client, userName);
-						
-						// Close the current frame
-						frmLogin.dispose();
-					} else {
-						JOptionPane.showMessageDialog(frmLogin, "Invalid credentials.  Please try again");
-						client.close();
-					}	
-				} catch (ConnectException con) {
-					con.printStackTrace();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				} 
+						if(confirmed == true) {
+							out.close();
+							in.close();
+							
+							JOptionPane.showMessageDialog(frmLogin, "Welcome back " + userName + "!", "Welcome to ATB Bank!", JOptionPane.INFORMATION_MESSAGE);
+							
+							AcctView acctview = new AcctView(client, userName);
+							
+							// Close the current frame
+							frmLogin.dispose();
+						} else {
+							JOptionPane.showMessageDialog(frmLogin, "Invalid credentials.  Please try again", "Error!", JOptionPane.INFORMATION_MESSAGE);
+							client.close();
+						}	
+					} catch (ConnectException con) {
+						con.printStackTrace();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					} 
+				}
+				
+
 			}
 		});	// End of btnLogin
 		

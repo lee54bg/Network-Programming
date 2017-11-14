@@ -24,7 +24,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import controller.SysAdminController;
 import model.Person;
+import model.SysLoginModel;
 
 public class SysAdmnLgnVw extends JFrame {
 	public static void main(String[] args) {
@@ -32,6 +34,8 @@ public class SysAdmnLgnVw extends JFrame {
 			public void run() {
 				try {
 					SysAdmnLgnVw sysAdmnLgnVw = new SysAdmnLgnVw();
+					SysLoginModel sysLoginModel = new SysLoginModel();
+					SysAdminController sysAdminController = new SysAdminController(sysAdmnLgnVw, sysLoginModel);					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -40,46 +44,25 @@ public class SysAdmnLgnVw extends JFrame {
 	} // End of main program
 	
 	private JTextField textField;
-	private JTextField textField_1;
+	private JTextField txtPassWd;
+	
 	private JButton btnLogin;
 	private JButton btnCancel;
-	private JButton btnSignUp;
+	
 	private JLabel lblUsername;
 	private JLabel lblPassword;
 	private JLabel lblWelcomeToBank;
+	
 	private JMenuBar menu;
 	private JMenuItem preferences;
-	
-	private String userName;
-	private String passWord;
 	
 	private String ipAddress;
 	private int portNum;
 	
-	private Socket client = null;
-	private DataOutputStream out;
-	private DataInputStream in;
-	
-	// Different parameters
-	public SysAdmnLgnVw(String ipAddress, int portNum) {
-		this.ipAddress = ipAddress;
-		this.portNum = portNum;
-		
-		createComponents();
-		addListener();
-	}
-	
-	/*
-	 * Default Constructor
-	 */
+	// Constructors with parameters from Preferences
 	public SysAdmnLgnVw() {
-		this.ipAddress = "127.0.0.1";
-		this.portNum = 3000;
-		
-		createComponents();
-		addListener();
+			createComponents();
 	}
-	
 	
 	/*
 	 * Initializing the components in the JFrame
@@ -112,19 +95,15 @@ public class SysAdmnLgnVw extends JFrame {
 		add(textField);
 		textField.setColumns(10);
 		
-		textField_1 = new JTextField();
-		textField_1.setBounds(128, 121, 153, 22);
-		add(textField_1);
-		textField_1.setColumns(10);
+		txtPassWd = new JTextField();
+		txtPassWd.setBounds(128, 121, 153, 22);
+		add(txtPassWd);
+		txtPassWd.setColumns(10);
 		
 		lblWelcomeToBank = new JLabel("Welcome to ABT Bank");
 		lblWelcomeToBank.setFont(new Font("Tahoma", Font.PLAIN, 21));
 		lblWelcomeToBank.setBounds(48, 13, 226, 43);
 		add(lblWelcomeToBank);
-		
-		btnSignUp = new JButton("Sign Up");
-		btnSignUp.setBounds(244, 174, 97, 25);
-		add(btnSignUp);
 		
 		menu = new JMenuBar();
 		setJMenuBar(menu);
@@ -134,33 +113,46 @@ public class SysAdmnLgnVw extends JFrame {
 	} // End of createComponents()
 
 	/**
-	 * Initialize the contents of the frame.
+	 * Adds the listeners
 	 */
-	private void addListener() {
-//		btnSignUp.addActionListener();
-//		btnLogin.addActionListener();
-//		btnCancel.addActionListener();
-
-		// Menu item preferences
-		preferences.addMouseListener(new MouseListener() {
-			public void mouseClicked(MouseEvent e) {
-				PreferencesView preference = new PreferencesView();
-				dispose();
-			}
-			// Empty events
-			public void mouseEntered(MouseEvent e) {}
-			public void mouseExited(MouseEvent e) {}
-			public void mousePressed(MouseEvent e) {}
-			public void mouseReleased(MouseEvent e) {}
-		});
-		
-	} // End of initialize method
+	public void addBtnLoginListener(ActionListener listener) {
+		btnLogin.addActionListener(listener);
+	}
+	
+	public void addCancelListener(ActionListener listener) {
+		btnCancel.addActionListener(listener);
+	}
+	
+	public void addPrefListener(MouseListener listener) {
+		preferences.addMouseListener(listener);
+	}
+	
+	/*
+	 * Getters and Setters
+	 */
 	
 	public String getUserName() {
 		return textField.getText();
 	}
 	
 	public String getPassWd() {
-		return textField_1.getText();
+		return txtPassWd.getText();
 	}
+	
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	public int getPortNum() {
+		return portNum;
+	}
+
+	public void setPortNum(int portNum) {
+		this.portNum = portNum;
+	}
+
 } // End of LoginForm Class

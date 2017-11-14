@@ -125,7 +125,7 @@ public class BankServer extends Thread {
 			conn = DriverManager.getConnection(url, dbusername, dbpwd);
 			
 			// Calls the query
-			statement = conn.prepareStatement("SELECT * FROM clients WHERE UserName = ? AND Password = ?");
+			statement = conn.prepareStatement("SELECT * FROM clients WHERE UserName = BINARY ? AND Password = BINARY ?");
 
 		    statement.setString(1, username);
 		    statement.setString(2, password);

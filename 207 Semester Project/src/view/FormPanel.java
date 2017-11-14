@@ -157,7 +157,7 @@ public class FormPanel extends JPanel {
 		okBtn[1].addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LoginFormView window = new LoginFormView();
+				ClientLoginView window = new ClientLoginView();
 				frames.dispose();
 			}
 		}); // End of cancel button		
@@ -183,10 +183,10 @@ public class FormPanel extends JPanel {
 		} else
 			JOptionPane.showMessageDialog(frames, "Please enter a valid Last Name");
 		// SSN
-		if( isANum(txtFlds[3].getText()) ) {
+		if( txtFlds[3].getText().matches("^\\d{9}$")) {
 			numOfVldFlds++;
 		} else
-			JOptionPane.showMessageDialog(frames, "Please enter a valid SSN");
+			JOptionPane.showMessageDialog(frames, "Please enter a valid 9 digit SSN");
 		// Email
 		if( txtFlds[4].getText().contains("@"))
 			numOfVldFlds++;
@@ -198,10 +198,10 @@ public class FormPanel extends JPanel {
 		} else
 			JOptionPane.showMessageDialog(frames, "Please enter a valid Phone Number");
 		// PIN number
-		if( isANum(txtFlds[6].getText()) )
+		if( txtFlds[6].getText().matches("^\\d{4}$"))
 			numOfVldFlds++;
 		else
-			JOptionPane.showMessageDialog(frames, "Please enter a valid PIN");
+			JOptionPane.showMessageDialog(frames, "Please enter a valid 4 digit PIN");
 		// Address
 		if( !txtFlds[7].getText().equals("")) {
 			numOfVldFlds++;
@@ -252,8 +252,11 @@ public class FormPanel extends JPanel {
 			else {
 				db.addPers(p);
 				db.disconnect();
-				JOptionPane.showMessageDialog(frames, "You have created an account successfully!\n");
-				LoginFormView window = new LoginFormView();
+				JOptionPane.showMessageDialog(frames, "You have created an account successfully!\n"
+				+ "Your Checking account No. is " + p.getChkAct()
+				 + "\nYour Savings account No. is " + p.getSvgAct() );
+
+				ClientLoginView window = new ClientLoginView();
 				frames.dispose();
 				
 			}

@@ -2,7 +2,7 @@ package main;
 
 import java.awt.EventQueue;
 
-import view.LoginFormView;
+import view.ClientLoginView;
 
 public class MainProgram {
 	/**
@@ -12,7 +12,7 @@ public class MainProgram {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					LoginFormView window = new LoginFormView();
+					ClientLoginView window = new ClientLoginView();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

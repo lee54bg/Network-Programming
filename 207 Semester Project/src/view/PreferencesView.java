@@ -11,6 +11,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JButton;
 
 public class PreferencesView extends JFrame {
+	private SysAdmnLgnVw sysAdmnLgnVw;
+	private ClientLoginView clientLoginView;
+	
 	private JFrame frame;
 	private JButton btnOk;
 	private JButton btnCancel;
@@ -20,50 +23,56 @@ public class PreferencesView extends JFrame {
 	
 	private String ipAddress;
 	private int portNum;
-	
-	private LoginFormView login;
-	
+		
 	public PreferencesView() {
 		frame = this;
 		setTitle("Login");
 		setSize(320, 220);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		getContentPane().setLayout(null);
+		setLayout(null);
 		
 		JLabel lblIpAddress = new JLabel("IP Address");
 		lblIpAddress.setBounds(40, 36, 78, 16);
-		getContentPane().add(lblIpAddress);
+		add(lblIpAddress);
 		
 		btnOk = new JButton("Ok");
 		btnOk.setBounds(40, 120, 97, 25);
-		getContentPane().add(btnOk);
+		add(btnOk);
 		
 		btnCancel = new JButton("Cancel");
 		btnCancel.setBounds(147, 120, 97, 25);
-		getContentPane().add(btnCancel);
+		add(btnCancel);
 		
 		txtPortNumber = new JTextField();
 		txtPortNumber.setBounds(130, 68, 116, 22);
-		getContentPane().add(txtPortNumber);
+		add(txtPortNumber);
 		txtPortNumber.setColumns(10);
 		
 		txtIpAddress = new JTextField();
 		txtIpAddress.setBounds(130, 33, 116, 22);
-		getContentPane().add(txtIpAddress);
+		add(txtIpAddress);
 		txtIpAddress.setColumns(10);
 		
 		JLabel lblPortNumber = new JLabel("Port Number");
 		lblPortNumber.setBounds(40, 71, 78, 16);
-		getContentPane().add(lblPortNumber);
+		add(lblPortNumber);
 		setVisible(true);
 		
 		addListeners();
 	}
 	
+	public PreferencesView(SysAdmnLgnVw sysAdmnLgnVw) {
+		this.sysAdmnLgnVw = sysAdmnLgnVw;
+	}
+	
+	public PreferencesView(ClientLoginView clientLoginView) {
+		this.clientLoginView = clientLoginView;
+	}
+	
 	private void addListeners() {
 		btnCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				login = new LoginFormView();
+				clientLoginView = new ClientLoginView();
 				dispose();
 			}
 		});
@@ -74,7 +83,7 @@ public class PreferencesView extends JFrame {
 					ipAddress	= getIpAddress();
 					portNum		= getPortNum();
 					
-					login = new LoginFormView(ipAddress, portNum);
+					clientLoginView = new ClientLoginView(ipAddress, portNum);
 					dispose();
 				} catch(NumberFormatException num) {
 					JOptionPane.showMessageDialog(frame, "Wrong fo");

@@ -58,9 +58,9 @@ public class AcctView {
 		btnSav.setBounds(135, 174, 97, 25);
 		frmActType.getContentPane().add(btnSav);
 		
-		lblWelcomeToBank = new JLabel("Select an account");
+		lblWelcomeToBank = new JLabel("Select an account...");
 		lblWelcomeToBank.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		lblWelcomeToBank.setBounds(48, 13, 226, 43);
+		lblWelcomeToBank.setBounds(48, 45, 226, 43);
 		frmActType.getContentPane().add(lblWelcomeToBank);
 		
 		btnCancel = new JButton("Sign Out");
@@ -78,7 +78,7 @@ public class AcctView {
 		btnChk.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frmActType, "Checking Account!");
+				JOptionPane.showMessageDialog(frmActType, "Getting your checking account ready...");
 				
 				ClientApp clientApp = new ClientApp(client, userName, 2);
 				frmActType.dispose();
@@ -89,7 +89,7 @@ public class AcctView {
 		btnSav.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frmActType, "Savings Account!");
+				JOptionPane.showMessageDialog(frmActType, "Getting your savings account ready...");
 				
 				ClientApp clientApp = new ClientApp(client, userName, 1);
 				frmActType.dispose();
@@ -100,7 +100,7 @@ public class AcctView {
 		btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LoginFormView window = new LoginFormView();
+				ClientLoginView window = new ClientLoginView();
 				frmActType.dispose();
 			}
 		}); // End of cancel button		
