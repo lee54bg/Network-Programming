@@ -1,4 +1,4 @@
-package view;
+package main;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 
@@ -203,7 +203,7 @@ public class SysAdminApp {
 		JMenuBar menuBar = new JMenuBar();
 		frmSystemAdmin.setJMenuBar(menuBar);
 		
-		JMenuItem mntmFile = new JMenuItem("File");
+		JMenuItem mntmFile = new JMenuItem("Preferences");
 		menuBar.add(mntmFile);
 		
 		viewPanel.add(tblScrl);

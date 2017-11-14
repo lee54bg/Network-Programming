@@ -26,9 +26,9 @@ public class Database {
 		Date startDate = new Date(calendar.getTime().getTime());
 
 		//the mysql insert statement
-	    String query = "INSERT INTO clients (FirstName, LastName, Email,"
-	    		+ " SocialSecurity, PhoneNumber, PIN, Address, City, State,"
-	    		+ " UserName, Password, SvgAct, SvgActBal, ChkAct, ChkActBal)"
+	    String query = "INSERT INTO clients (FirstName, LastName, Email,"		// 3 fields
+	    		+ " SocialSecurity, PhoneNumber, PIN, Address, City, State,"	// 6
+	    		+ " UserName, Password, SvgAct, SvgActBal, ChkAct, ChkActBal)"	// 6
 	    		+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		PreparedStatement preparedStmt;
@@ -110,11 +110,7 @@ public class Database {
 			e.printStackTrace();
 		}
 	}
-	
-	/*public void load() throws SQLException {
-		people.clear();
-	}*/
-	
+		
 	// Disconnect the SQL table
 	public void disconnect() {
 		if (connection != null) {

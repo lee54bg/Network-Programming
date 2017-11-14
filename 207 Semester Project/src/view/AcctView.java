@@ -27,13 +27,10 @@ public class AcctView {
 	private JButton btnChk;
 	private JButton btnSav;
 	private JButton btnCancel;
-	private JLabel lblUsername;
-	private JLabel lblPassword;
 	private JLabel lblWelcomeToBank;
 	
 	Socket client;
 	private String userName;
-	private String passWord;
 	
 	/**
 	 * Create the application.
@@ -60,24 +57,6 @@ public class AcctView {
 		btnSav = new JButton("Savings");
 		btnSav.setBounds(135, 174, 97, 25);
 		frmActType.getContentPane().add(btnSav);
-		
-//		lblUsername = new JLabel("Username:");
-//		lblUsername.setBounds(48, 72, 85, 16);
-//		frmActType.getContentPane().add(lblUsername);
-//		
-//		lblPassword = new JLabel("Password:");
-//		lblPassword.setBounds(48, 124, 85, 16);
-//		frmActType.getContentPane().add(lblPassword);
-//		
-//		textField = new JTextField();
-//		textField.setBounds(128, 69, 153, 22);
-//		frmActType.getContentPane().add(textField);
-//		textField.setColumns(10);
-//		
-//		textField_1 = new JTextField();
-//		textField_1.setBounds(128, 121, 153, 22);
-//		frmActType.getContentPane().add(textField_1);
-//		textField_1.setColumns(10);
 		
 		lblWelcomeToBank = new JLabel("Select an account");
 		lblWelcomeToBank.setFont(new Font("Tahoma", Font.PLAIN, 21));
@@ -121,7 +100,7 @@ public class AcctView {
 		btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LoginForm window = new LoginForm();
+				LoginFormView window = new LoginFormView();
 				frmActType.dispose();
 			}
 		}); // End of cancel button		

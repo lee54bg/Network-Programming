@@ -7,6 +7,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import model.Database;
 import model.Person;
 
 import java.awt.Font;
@@ -24,71 +25,36 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.math.BigDecimal;
 
-
 public class ClientApp {
 	JFrame frame;
 	Socket client;
 	Person person;
 	String userName;
+	Database db;
 	
-	// 1= savings, 2=checking
+	// 1 = savings, 2 = checking
 	int accountType = 0;
 	
-	
-	//Declare variables
-		int changePINValue = 0;
-		BigDecimal withdrawValue;
-		BigDecimal depositValue;
-	
-		//Connection to DB 
-		Connection conn = null;
-		PreparedStatement statement = null;	
-		
+	// Declare variables
+	int changePINValue = 0;
+	BigDecimal withdrawValue;
+	BigDecimal depositValue;
 
-	public JFrame getFrame() {
-		return frame;
-	}
-
-	public void setFrame(JFrame frame) {
-		this.frame = frame;
-	}
-
-	/**
-	 * Create the application.
-	 * @param person 
-	 */
+	// Connection to DB 
+	Connection conn = null;
+	PreparedStatement statement = null;	
 	
-	public ClientApp(Socket client, String userName, int x) {
-		frame		= new JFrame("Client");
+	public ClientApp(Socket client, String userName, int accountType) {
+		frame = new JFrame("Client");
 		this.client = client;
 		this.userName = userName;
-		accountType = x;
+		this.accountType = accountType;
 		
 		initialize();
 		connectDB();
-
-	}
-	
-//	public ClientApp(Socket client, Person person) {
-//		frame		= new JFrame("Client");
-//		this.client = client;
-//		this.person = person;
-//		
-//		initialize();
-//		
-//	}
-//	
-
-	public ClientApp(Socket client) {
-		frame		= new JFrame("Client");
-		this.client	= client;
-		
-		initialize();
 	}
 
-	/**
-	 * Initialize the contents of the 
-	 */
+	// Initialize the GUI components
 	private void initialize() {
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -126,21 +92,18 @@ public class ClientApp {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				String withdraw = JOptionPane.showInputDialog(frame, "Your current balance is $ "
-						+ checkBalance() + "\nHow much would you like to withdraw?");
+					+ checkBalance() + "\nHow much would you like to withdraw?");
 				
 				//Added to not crash on cancel
 				if (withdraw != null) {
-
-				if (withdraw.matches("^\\d+\\.\\d{2}$")) {
-					withdrawValue = new BigDecimal(withdraw);
-					BigDecimal x = withdraw();
-					JOptionPane.showMessageDialog(frame, "Your new balance is $ " + x);
-
-				}
-				else {
-					JOptionPane.showMessageDialog(frame, "Please enter a value with 2 decimals!");
-
-				}
+					if (withdraw.matches("^\\d+\\.\\d{2}$")) {
+						withdrawValue = new BigDecimal(withdraw);
+						BigDecimal x = withdraw();
+						JOptionPane.showMessageDialog(frame, "Your new balance is $ " + x);
+					}
+					else {
+						JOptionPane.showMessageDialog(frame, "Please enter a value with 2 decimals!");
+					}
 				}
 			}
 		});
@@ -150,21 +113,21 @@ public class ClientApp {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				String deposit = JOptionPane.showInputDialog(frame, "Your current balance is $ "
-						+ checkBalance() + "\nHow much would you like to deposit?");
+					+ checkBalance() + "\nHow much would you like to deposit?");
 				
 				//Added to not crash on cancel
 				if (deposit != null) {
 
-				if (deposit.matches("^\\d+\\.\\d{2}$")) {
-					depositValue = new BigDecimal(deposit);
-					BigDecimal x = deposit();
-					JOptionPane.showMessageDialog(frame, "Your new balance is $ " + x);
+					if (deposit.matches("^\\d+\\.\\d{2}$")) {
+						depositValue = new BigDecimal(deposit);
+						BigDecimal x = deposit();
+						JOptionPane.showMessageDialog(frame, "Your new balance is $ " + x);
 
-				}
-				else {
-					JOptionPane.showMessageDialog(frame, "Please enter a value with 2 decimals!");
+					}
+					else {
+						JOptionPane.showMessageDialog(frame, "Please enter a value with 2 decimals!");
 
-				}
+					}
 				}				
 			}
 		});
@@ -188,7 +151,6 @@ public class ClientApp {
 				if (changePIN != null) {
 					changePINValue = Integer.parseInt(changePIN);
 					changePIN();
-					//clear changePIN value?
 				}
 			}
 		});
@@ -196,38 +158,28 @@ public class ClientApp {
 		btnExit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-								      try {
+				try {
 
-				         if(statement != null)
-				            statement.close();
+					if(statement != null)
+						statement.close();
 
-				      } catch (SQLException ex) {
-				           ex.printStackTrace();
-				      }
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
 
-				      try {
+				try {
 
-				         if(conn != null)
-				            conn.close();
+					if(conn != null)
+						conn.close();
 
-				      } catch (SQLException ex) {
-				           ex.printStackTrace();
-				      }
-				
-//				LoginForm window = new LoginForm();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+
 				AcctView acctview = new AcctView(client, userName);
 				frame.dispose();
-
-
-				
-				
-//				try {
-////					client.close();
-//				} catch (IOException e1) {
-//					e1.printStackTrace();
-//				}
 			}
-		
+			
 		});
 	}
 	
@@ -245,17 +197,16 @@ public class ClientApp {
 		String query = "UPDATE clients SET PIN = ? WHERE UserName = ?";
 		try {
 			statement = conn.prepareStatement(query);
-		    statement.setInt(1, pin);
-		    statement.setString(2, username);
+			statement.setInt(1, pin);
+			statement.setString(2, username);
 
-		    statement.executeUpdate();
+			statement.executeUpdate();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	//Check Balance
+	// Check Balance
 	private BigDecimal checkBalance() {
 		
 		String username;
@@ -268,14 +219,13 @@ public class ClientApp {
 			
 			try {
 				statement = conn.prepareStatement(query);
-			    statement.setString(1, username);
+				statement.setString(1, username);
 
-			    ResultSet rs = statement.executeQuery();
-			    rs.next();
-			    balance = rs.getBigDecimal(1);
-			    
+				ResultSet rs = statement.executeQuery();
+				rs.next();
+				balance = rs.getBigDecimal(1);
+				
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -284,22 +234,18 @@ public class ClientApp {
 			
 			try {
 				statement = conn.prepareStatement(query);
-			    statement.setString(1, username);
+				statement.setString(1, username);
 
-			    ResultSet rs = statement.executeQuery();
-			    rs.next();
-			    balance = rs.getBigDecimal(1);
-			    
+				ResultSet rs = statement.executeQuery();
+				rs.next();
+				balance = rs.getBigDecimal(1);
+				
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
 
-		 return balance;
-
-		
+		return balance;
 	}
 	
 	private BigDecimal withdraw() {
@@ -318,10 +264,10 @@ public class ClientApp {
 			String query = "UPDATE clients SET SvgActBal = ? WHERE UserName = ?";
 			try {
 				statement = conn.prepareStatement(query);
-			    statement.setBigDecimal(1, newBalance);
-			    statement.setString(2, username);
+				statement.setBigDecimal(1, newBalance);
+				statement.setString(2, username);
 
-			    statement.executeUpdate();
+				statement.executeUpdate();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -332,10 +278,10 @@ public class ClientApp {
 			String query = "UPDATE clients SET ChkActBal = ? WHERE UserName = ?";
 			try {
 				statement = conn.prepareStatement(query);
-			    statement.setBigDecimal(1, newBalance);
-			    statement.setString(2, username);
+				statement.setBigDecimal(1, newBalance);
+				statement.setString(2, username);
 
-			    statement.executeUpdate();
+				statement.executeUpdate();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -365,10 +311,10 @@ public class ClientApp {
 			String query = "UPDATE clients SET SvgActBal = ? WHERE UserName = ?";
 			try {
 				statement = conn.prepareStatement(query);
-			    statement.setBigDecimal(1, newBalance);
-			    statement.setString(2, username);
+				statement.setBigDecimal(1, newBalance);
+				statement.setString(2, username);
 
-			    statement.executeUpdate();
+				statement.executeUpdate();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -379,42 +325,30 @@ public class ClientApp {
 			String query = "UPDATE clients SET ChkActBal = ? WHERE UserName = ?";
 			try {
 				statement = conn.prepareStatement(query);
-			    statement.setBigDecimal(1, newBalance);
-			    statement.setString(2, username);
+				statement.setBigDecimal(1, newBalance);
+				statement.setString(2, username);
 
-			    statement.executeUpdate();
+				statement.executeUpdate();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-
-
 		
 		return newBalance;
-		
 	}
 	
-	
-	
 	public void connectDB() {
-try {
-			
-			//Connect
+		try {
 			Class.forName("com.mysql.jdbc.Driver");
-						
+			
 			String url = "jdbc:mysql://localhost:3306/atb_bank";
 			String dbusername = "testadmin";
 			String pwd = "root";
 			
 			conn = DriverManager.getConnection(url, dbusername, pwd);		    
-				
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	
-	
-	
+	} // End of connectDB() method
 }

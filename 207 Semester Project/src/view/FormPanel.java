@@ -157,7 +157,7 @@ public class FormPanel extends JPanel {
 		okBtn[1].addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LoginForm window = new LoginForm();
+				LoginFormView window = new LoginFormView();
 				frames.dispose();
 			}
 		}); // End of cancel button		
@@ -253,7 +253,7 @@ public class FormPanel extends JPanel {
 				db.addPers(p);
 				db.disconnect();
 				JOptionPane.showMessageDialog(frames, "You have created an account successfully!\n");
-				LoginForm window = new LoginForm();
+				LoginFormView window = new LoginFormView();
 				frames.dispose();
 				
 			}
